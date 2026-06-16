@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Bureau d'études - Developpement</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+    <link rel="stylesheet" href="style/style.css">
+</head>
+<body>
+    <div id="global-status" class="global-status is-hidden" role="status" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <div class="global-status-text">Chargement...</div>
+    </div>
+    <div class="app-container">
+        <!-- Sidebar : logo, navigation, utilisateur -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="img/logo.png" alt="POST FORMING INDUSTRIES">
+                <h2 class="logo-title">Bureau d'études</h2>
+            </div>
+            <nav class="sidebar-nav" aria-label="Navigation principale">
+                <ul>
+                    <li class="active"><a href="#" data-page="dashboard">📋 Plans d'ensemble</a></li>
+                    <li><a href="#" data-page="components">📦 Plans de composants</a></li>
+                    <li><a href="#" data-page="projects">📁 Tous les plans</a></li>
+                    <li id="nav-remontee-prod" style="display: none;"><a href="#" data-page="remontee-prod">🏭 Remontée de prod</a></li>
+                    <li id="nav-planning" style="display: none;"><a href="#" data-page="planning">📅 Planning</a></li>
+                    <li id="nav-deleted-plans" style="display: none;"><a href="#" data-page="deleted-plans">🗑️ Plans supprimés</a></li>
+                    <li id="nav-debit-panneaux" style="display: none;"><a href="#" data-page="debit-panneaux">📐 Débit de panneaux</a></li>
+                    <li id="nav-admin" style="display: none;"><a href="admin.html" data-page="admin">🔐 Administration</a></li>
+                </ul>
+            </nav>
+            <div class="user-profile">
+                <div class="avatar" id="user-avatar">AD</div>
+                <div class="info">
+                    <p class="name" id="user-name" title="">Chargement...</p>
+                    <p class="role" id="user-role">Utilisateur</p>
+                    <div class="auth-actions">
+                        <a id="login-link" href="/login" class="auth-link" style="display: none;">Se connecter</a>
+                        <a id="logout-link" href="/logout" class="auth-link" style="display: none;">Se déconnecter</a>
+                    </div>
+                </div>
+            </div>
+            <div class="connected-users" id="connected-users" title="Utilisateurs avec une session active">
+                <span class="connected-users-icon" aria-hidden="true">👥</span>
+                <span class="connected-users-count" id="connected-users-count">—</span>
+                <span class="connected-users-label">connecté(s)</span>
+            </div>
+        </aside>
+
+        <!-- Zone principale : en-tête + contenu -->
+        <main class="main-content">
+            <header class="page-header">
+                <div class="page-header-title">
+                    <h1 id="page-title">Plans d'ensemble</h1>
+                    <p class="page-subtitle" id="page-subtitle">Industrie du bois · gestion des plans et ateliers</p>
+                </div>
+                <div class="page-header-actions">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Rechercher un projet, client...">
+                        <span id="project-count" class="project-count" title="Nombre de projets affichés">0 projet(s)</span>
+                    </div>
+                    <div id="notifications-bell-wrap" class="notifications-bell-wrap" style="display:none;">
+                        <button id="notifications-bell-btn" class="btn-secondary notifications-bell-btn" type="button" title="Notifications">
+                            <span aria-hidden="true">🔔</span>
+                            <span id="notifications-bell-badge" class="notifications-bell-badge is-hidden">0</span>
+                        </button>
+                        <div id="notifications-panel" class="notifications-panel is-hidden">
+                            <div class="notifications-panel-header">
+                                <strong>Notifications</strong>
+                                <button id="notifications-refresh-btn" type="button" class="btn-secondary btn-small">Actualiser</button>
+                            </div>
+                            <div id="notifications-list" class="notifications-list"></div>
+                        </div>
+                    </div>
+                    <div class="actions-bar">
+                        <button id="btn-add-project" class="btn-add-project" style="display: none;">
+                            <span>➕</span> Ajouter un projet
+                        </button>
+                        <button id="open-idea-modal" class="btn-secondary" title="Proposer une amelioration">
+                            <span>💡</span> Proposer une idee
+                        </button>
+                        <button id="open-bulk-pdf-modal" class="btn-primary btn-bulk-pdf" disabled title="Exporter, OneDrive, email">
+                            <span>🔗</span> Partager
+                        </button>
+                        <button id="open-bulk-edit-modal" class="btn-primary btn-bulk-edit" disabled title="Modifier l'état, le client ou le demandeur des lignes sélectionnées">
+                            <span>✏️</span> Modifier en masse
+                        </button>
+                        <button id="open-bulk-excel-modal" class="btn-primary btn-bulk-excel" disabled title="Exporter les lignes sélectionnées en Excel">
+                            <span>📊</span> Extraction Excel
+                        </button>
+                        <span id="bulk-selected-count" class="bulk-selected-count">0 sélectionné</span>
+                        <button id="bulk-clear-selection" class="btn-secondary" title="Vider la sélection">Vider</button>
+                        <button id="btn-sync-db" class="btn-sync-db" title="Synchroniser depuis la base de données">
+                            <span>🔄</span> Synchroniser
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="view-container">
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="view active">
+                <div class="kpi-grid">
+                    <div class="kpi-card" data-kpi-filter="total" role="button" tabindex="0" title="Cliquer pour afficher tous les projets">
+                        <h3>Total Projets</h3>
+                        <p class="value" id="kpi-total">0</p>
+                    </div>
+                    <div class="kpi-card warning" data-kpi-filter="ongoing" role="button" tabindex="0" title="Cliquer pour afficher les projets en cours">
+                        <h3>En Cours</h3>
+                        <p class="value" id="kpi-ongoing">0</p>
+                    </div>
+                    <div class="kpi-card accent" data-kpi-filter="validation" role="button" tabindex="0" title="Cliquer pour afficher les projets en validation">
+                        <h3>En Validation</h3>
+                        <p class="value" id="kpi-validation">0</p>
+                    </div>
+                    <div class="kpi-card success" data-kpi-filter="completed" role="button" tabindex="0" title="Cliquer pour afficher les projets terminés">
+                        <h3>Terminés</h3>
+                        <p class="value" id="kpi-completed">0</p>
+                    </div>
+                    <div class="kpi-card danger" data-kpi-filter="delayed" role="button" tabindex="0" title="Cliquer pour afficher les projets en retard">
+                        <h3>Retards</h3>
+                        <p class="value" id="kpi-delayed">0</p>
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <h2 id="projects-section-title">Plans d'ensemble</h2>
+                    <div class="section-header-actions">
+                        <div class="dropdown-columns-wrap">
+                            <button type="button" id="btn-columns-toggle" class="btn-secondary" aria-haspopup="true" aria-expanded="false">Colonnes</button>
+                            <div id="columns-dropdown" class="dropdown-columns" role="menu" hidden>
+                                <div class="dropdown-columns-list" id="columns-checkboxes"></div>
+                            </div>
+                        </div>
+                        <button id="clearFilters" class="btn-clear-filters">Effacer tous les filtres</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="projects-table">
+                        <thead>
+                            <tr>
+                                <th class="select-column">
+                                    <input type="checkbox" id="select-all-projects" title="Tout sélectionner">
+                                </th>
+                                <th class="col-plan-number" data-column="N°Plan">
+                                    <div class="filter-header">
+                                        <span>N° Plan</span>
+                                        <input type="text" class="column-filter" data-column="N°Plan" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list" data-column="N°Plan" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th data-column="designation">
+                                    <div class="filter-header">
+                                        <span>Désignation</span>
+                                        <input type="text" class="column-filter" data-column="designation" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list" data-column="designation" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th data-column="dimensions">
+                                    <div class="filter-header">
+                                        <span>Dimensions</span>
+                                        <input type="text" class="column-filter" data-column="dimensions" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list" data-column="dimensions" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th data-column="Client">
+                                    <div class="filter-header">
+                                        <span>Client</span>
+                                        <input type="text" class="column-filter" data-column="Client" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list" data-column="Client" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th data-column="chantier">
+                                    <div class="filter-header">
+                                        <span>Chantier</span>
+                                        <input type="text" class="column-filter" data-column="chantier" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list" data-column="chantier" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th data-column="Ville">
+                                    <div class="filter-header">
+                                        <span>Ville</span>
+                                        <input type="text" class="column-filter" data-column="Ville" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list" data-column="Ville" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th data-column="finition">
+                                    <div class="filter-header">
+                                        <span>Finition</span>
+                                        <input type="text" class="column-filter" data-column="finition" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list" data-column="finition" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th data-column="dessinateur">
+                                    <div class="filter-header">
+                                        <span>Dessinateur</span>
+                                        <input type="text" class="column-filter" data-column="dessinateur" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list" data-column="dessinateur" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th data-column="demandeur">
+                                    <div class="filter-header">
+                                        <span>Demandeur</span>
+                                        <input type="text" class="column-filter" data-column="demandeur" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list" data-column="demandeur" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th data-column="etat">
+                                    <div class="filter-header">
+                                        <span>État</span>
+                                        <input type="text" class="column-filter" data-column="etat" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list" data-column="etat" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th class="admin-only only-ensemble" data-column="temps_dev">
+                                    <div class="filter-header">
+                                        <span>Temps dev (h)</span>
+                                        <input type="text" class="column-filter" data-column="temps_dev" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list" data-column="temps_dev" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th class="actions-column">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projects-table-body">
+                            <!-- Rows will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="pagination-bar" class="pagination-bar">
+                    <button type="button" id="pagination-first" class="btn-secondary" title="Première page">« Première</button>
+                    <button type="button" id="pagination-prev" class="btn-secondary" title="Page précédente">← Précédent</button>
+                    <span id="pagination-info" class="pagination-info">Page 1 / 1</span>
+                    <button type="button" id="pagination-next" class="btn-secondary" title="Page suivante">Suivant →</button>
+                    <button type="button" id="pagination-last" class="btn-secondary" title="Dernière page">Dernière »</button>
+                </div>
+            </div>
+
+            <!-- Plans supprimés (admin — archive base) -->
+            <div id="deleted-plans-view" class="view">
+                <div class="section-header">
+                    <h2>Plans supprimés</h2>
+                    <div class="section-header-actions">
+                        <button type="button" id="deleted-plans-refresh" class="btn-secondary">Actualiser</button>
+                    </div>
+                </div>
+                <p class="planning-hint">Copie des lignes retirées des tables actives (DEV / DEV_Composants), conservée pour consultation.</p>
+                <div id="deleted-plans-feedback" class="edit-feedback is-hidden"></div>
+                <div class="table-container">
+                    <table class="projects-table">
+                        <thead>
+                            <tr>
+                                <th>N° Plan</th>
+                                <th>Désignation</th>
+                                <th data-deleted-col-header="Client">
+                                    <div class="filter-header">
+                                        <span>Client</span>
+                                        <input type="text" class="deleted-plans-col-filter" data-deleted-col="Client" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list btn-deleted-plans-filter-list" data-deleted-col="Client" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th data-deleted-col-header="chantier">
+                                    <div class="filter-header">
+                                        <span>Chantier</span>
+                                        <input type="text" class="deleted-plans-col-filter" data-deleted-col="chantier" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list btn-deleted-plans-filter-list" data-deleted-col="chantier" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th data-deleted-col-header="Ville">
+                                    <div class="filter-header">
+                                        <span>Ville</span>
+                                        <input type="text" class="deleted-plans-col-filter" data-deleted-col="Ville" placeholder="Filtrer...">
+                                        <button type="button" class="btn-filter-list btn-deleted-plans-filter-list" data-deleted-col="Ville" title="Filtrer par liste">≡</button>
+                                    </div>
+                                </th>
+                                <th>Type</th>
+                                <th>Table source</th>
+                                <th>Supprimé le</th>
+                                <th>Supprimé par</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="deleted-plans-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Planning View -->
+            <div id="planning-view" class="view">
+                <div class="section-header">
+                    <h2>Planning dessinateurs</h2>
+                </div>
+
+                <div class="planning-team-panel">
+                    <div class="section-header" style="margin-bottom: 0.5rem;">
+                        <div class="planning-hint">Cliquez sur un dessinateur pour régler ses horaires, congés et absences.</div>
+                        <button id="btn-add-dessinateur-planning" class="btn-secondary">+ Ajouter un dessinateur</button>
+                    </div>
+                    <div id="planning-dessinateurs-list" class="planning-team-list"></div>
+                </div>
+
+                <div class="planning-grid">
+                    <div class="planning-card">
+                        <div class="section-header" style="margin-bottom: 0.5rem;">
+                            <h3 style="font-size: 1.1rem;">Attribution des projets à traiter</h3>
+                            <button id="btn-refresh-planning-assignments" class="btn-secondary">Actualiser</button>
+                        </div>
+
+
+                        <div id="planning-assignments-summary" class="planning-summary"></div>
+
+                        <div class="table-container" style="max-height: 360px;">
+                            <table class="planning-assignments-table">
+                                <thead>
+                                    <tr>
+                                        <th>N° Plan</th>
+                                        <th>Désignation</th>
+                                        <th>État</th>
+                                        <th>Temps dev</th>
+                                        <th>Date prévue</th>
+                                        <th>Dessinateur</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="planning-assignments-body"></tbody>
+                            </table>
+                        </div>
+
+                        <div id="planning-assignments-feedback" class="edit-feedback"></div>
+                        <div id="planning-weekly-view" class="planning-weekly-view"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Débit de panneaux (admin — BC + optimisation) -->
+            <div id="debit-panneaux-view" class="view">
+                <div class="section-header">
+                    <h2>Débit de panneaux</h2>
+                    <div class="section-header-actions">
+                        <button type="button" id="debit-sync-bc" class="btn-secondary" title="Recharger la liste depuis Business Central">Synchroniser BC</button>
+                    </div>
+                </div>
+                <p id="debit-bc-hint" class="debit-bc-hint planning-hint" role="status"></p>
+                <div class="planning-card debit-card" style="margin-bottom:.75rem;">
+                    <h3 class="debit-card-title">Réglages</h3>
+                    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                        <div class="form-group" style="min-width:220px;">
+                            <label for="debit-margin-edge">Distance bord panneau (mm)</label>
+                            <input type="number" id="debit-margin-edge" class="debit-input-num" min="0" step="1" value="30">
+                        </div>
+                        <div class="form-group" style="min-width:220px;">
+                            <label for="debit-gap-between">Distance entre pièces (mm)</label>
+                            <input type="number" id="debit-gap-between" class="debit-input-num" min="0" step="1" value="4">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="debit-grid">
+                    <div class="planning-card debit-card">
+                        <h3 class="debit-card-title">Matériau</h3>
+                        <div class="form-group">
+                            <label for="debit-material-search">Filtrer par désignation / référence</label>
+                            <input type="text" id="debit-material-search" class="debit-input-text" placeholder="Ex: compact, MP00003, stratifié...">
+                        </div>
+                        <div class="form-group" style="display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:end;">
+                            <div>
+                            <label for="debit-material-select">Article / panneau (Business Central)</label>
+                            <select id="debit-material-select">
+                                <option value="">— Chargement depuis Business Central… —</option>
+                            </select>
+                            </div>
+                            <button type="button" id="debit-add-material" class="btn-secondary">+ Ajouter</button>
+                        </div>
+                        <p id="debit-material-info" class="planning-hint"></p>
+                        <div id="debit-selected-materials" class="debit-material-sections"></div>
+                    </div>
+
+                    <div class="planning-card debit-card">
+                        <h3 class="debit-card-title">Pièces à découper <span class="debit-unit">(mm)</span></h3>
+                        <div class="table-container debit-table-wrap">
+                            <table class="projects-table debit-table">
+                                <thead>
+                                    <tr>
+                                        <th>Libellé</th>
+                                        <th>Longueur</th>
+                                        <th>Largeur</th>
+                                        <th>Qté</th>
+                                        <th>Matière</th>
+                                        <th>Chant L1</th>
+                                        <th>Chant L2</th>
+                                        <th>Chant l1</th>
+                                        <th>Chant l2</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="debit-pieces-body"></tbody>
+                            </table>
+                        </div>
+                        <button type="button" id="debit-add-piece" class="btn-secondary btn-small">+ Pièce</button>
+                    </div>
+                </div>
+
+                <div class="debit-actions">
+                    <label class="debit-check-label">
+                        <input type="checkbox" id="debit-allow-rotate" checked>
+                        Autoriser la rotation à 90°
+                    </label>
+                    <label class="debit-check-label">
+                        <input type="checkbox" id="debit-respect-grain">
+                        Sens de fil (respecter la longueur matière)
+                    </label>
+                    <button type="button" id="debit-optimize" class="btn-primary">Calculer le plan de découpe</button>
+                    <button type="button" id="debit-export-scies" class="btn-secondary">Exporter .txt (SCIES)</button>
+                </div>
+                <div id="debit-results" class="debit-results is-hidden" aria-live="polite">
+                    <div class="debit-summary planning-card">
+                        <h3 class="debit-card-title">Résultat</h3>
+                        <ul class="debit-summary-list">
+                            <li><strong>Panneaux utilisés :</strong> <span id="debit-sum-sheets">—</span></li>
+                            <li><strong>Surface panneaux :</strong> <span id="debit-sum-sheets-area">—</span> m²</li>
+                            <li><strong>Surface pièces :</strong> <span id="debit-sum-pieces-area">—</span> m²</li>
+                            <li><strong>Chutes (perte) :</strong> <span id="debit-sum-waste">—</span> m² (<span id="debit-sum-waste-pct">—</span>%)</li>
+                        </ul>
+                        <p id="debit-result-warning" class="edit-feedback is-hidden"></p>
+                    </div>
+                    <div id="debit-canvas-host" class="debit-canvas-host"></div>
+                </div>
+                <div id="debit-canvas-modal" class="modal" style="display:none;">
+                    <div class="modal-content" style="max-width:95vw;max-height:95vh;overflow:auto;">
+                        <div class="modal-header">
+                            <h2 id="debit-canvas-modal-title">Aperçu découpe</h2>
+                            <span id="debit-canvas-modal-close" class="close">&times;</span>
+                        </div>
+                        <div id="debit-canvas-modal-body" style="padding:8px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="remontee-prod-view" class="view">
+                <div class="section-header">
+                    <h2>Remontée de prod</h2>
+                </div>
+                <div class="planning-card">
+                    <div class="remontee-tabs" role="tablist" aria-label="Type de demande remontée">
+                        <button type="button" class="remontee-tab is-active" data-remontee-tab="modification">Demande de modification</button>
+                        <button type="button" class="remontee-tab" data-remontee-tab="creation">Demande de création</button>
+                    </div>
+
+                    <div class="remontee-tab-panel is-active" data-remontee-panel="modification">
+                    <form id="remontee-prod-form" class="edit-form">
+                        <div class="form-group">
+                            <label for="remontee-reference">Recherche plan (ensembles + composants)</label>
+                            <input type="text" id="remontee-reference" list="remontee-reference-list" placeholder="Ex: 1234567-0000" required>
+                            <datalist id="remontee-reference-list"></datalist>
+                            <small>Commencez à taper pour rechercher parmi tous les plans existants.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="remontee-dessinateur">Dessinateur concerné</label>
+                            <select id="remontee-dessinateur" required>
+                                <option value="">-- Sélectionner un dessinateur --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="remontee-description">Description</label>
+                            <textarea id="remontee-description" rows="3" placeholder="Décrivez le problème ou l'ajustement demandé..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="remontee-photo">Photo (largement recommandé)</label>
+                            <input type="file" id="remontee-photo" accept="image/png,image/jpeg,image/webp">
+                            <div id="remontee-photo-preview" class="bulk-email-hint" style="display:none;"></div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Ajouter la remontée</button>
+                            <button type="button" id="remontee-refresh" class="btn-secondary">Actualiser</button>
+                        </div>
+                        <div id="remontee-feedback" class="edit-feedback"></div>
+                    </form>
+                    <div class="table-container" style="margin-top: 1rem;">
+                        <table class="projects-table">
+                            <thead>
+                                <tr>
+                                    <th>Référence</th>
+                                    <th>Désignation</th>
+                                    <th>Dessinateur concerné</th>
+                                    <th>Description</th>
+                                    <th>Photo</th>
+                                    <th>État</th>
+                                    <th>Date ajout</th>
+                                    <th>Ajouté par</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="remontee-prod-body"></tbody>
+                        </table>
+                    </div>
+                    </div>
+
+                    <div class="remontee-tab-panel" data-remontee-panel="creation">
+                    <h3 style="margin-bottom: 0.75rem;">Demande de création d'article (sans référence)</h3>
+                    <form id="article-request-form" class="edit-form">
+                        <div class="form-group">
+                            <label for="article-request-designation">Désignation *</label>
+                            <input type="text" id="article-request-designation" placeholder="Nom de la pièce à créer" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="article-request-client">Client *</label>
+                            <input type="text" id="article-request-client" list="article-request-client-list" placeholder="Client concerné" required>
+                            <div class="form-inline-row form-inline-row-below">
+                                <button type="button" id="article-request-client-add" class="btn-secondary">+ Ajouter client</button>
+                            </div>
+                            <datalist id="article-request-client-list"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label for="article-request-dessinateur">Dessinateur concerné *</label>
+                            <select id="article-request-dessinateur" required>
+                                <option value="">-- Sélectionner un dessinateur --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="article-request-description">Détails (optionnel)</label>
+                            <textarea id="article-request-description" rows="3" placeholder="Contexte atelier, contraintes, dimensions..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="article-request-croquis">Croquis (largement recommandé)</label>
+                            <input type="file" id="article-request-croquis" accept="image/png,image/jpeg,image/webp">
+                            <div id="article-request-croquis-preview" class="bulk-email-hint" style="display:none;"></div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Ajouter la demande</button>
+                            <button type="button" id="article-request-refresh" class="btn-secondary">Actualiser</button>
+                        </div>
+                        <div id="article-request-feedback" class="edit-feedback"></div>
+                    </form>
+                    <div class="table-container" style="margin-top: 1rem;">
+                        <table class="projects-table" id="article-request-table">
+                            <thead>
+                                <tr>
+                                    <th>Désignation</th>
+                                    <th>Client</th>
+                                    <th>Dessinateur</th>
+                                    <th>Croquis</th>
+                                    <th>Statut</th>
+                                    <th>Référence créée</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="article-request-body"></tbody>
+                        </table>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal détail plan supprimé (snapshot JSON) -->
+    <div id="deleted-plan-detail-modal" class="modal">
+        <div class="modal-content pdf-modal-content" style="max-width:720px;">
+            <span class="close-modal deleted-plan-detail-close">&times;</span>
+            <h2 id="deleted-plan-detail-title">Détail archive</h2>
+            <div class="modal-body" id="deleted-plan-detail-body" style="max-height:70vh;overflow:auto;font-size:0.9rem;white-space:pre-wrap;word-break:break-word;"></div>
+        </div>
+    </div>
+
+    <!-- Modal for Details -->
+    <div id="project-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="modal-title">Détails du Projet</h2>
+            <div class="modal-body" id="modal-body">
+                <!-- Details injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for PDFs -->
+    <div id="pdf-modal" class="modal">
+        <div class="modal-content pdf-modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="pdf-modal-title">PDFs disponibles</h2>
+            <div class="pdf-modal-body" id="pdf-modal-body">
+                <div class="loading">Chargement des PDFs...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal idee d'evolution -->
+    <div id="idea-modal" class="modal">
+        <div class="modal-content pdf-modal-content">
+            <span class="close-modal idea-close">&times;</span>
+            <h2>Signaler une idee ou un bug</h2>
+            <form id="idea-form" class="edit-form">
+                <div class="form-group">
+                    <label for="idea-kind">Type de demande</label>
+                    <select id="idea-kind" required>
+                        <option value="idea" selected>Idee d'amelioration</option>
+                        <option value="bug">Signaler un bug</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="idea-title">Titre</label>
+                    <input type="text" id="idea-title" maxlength="140" placeholder="Ex: Ajouter un filtre par projet favori" required>
+                </div>
+                <div class="form-group">
+                    <label for="idea-description">Description</label>
+                    <textarea id="idea-description" rows="5" maxlength="3000" placeholder="Expliquez le besoin, le probleme, et l'amelioration souhaitee..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="idea-screenshot">Capture d'ecran (optionnel, png/jpg/webp)</label>
+                    <input type="file" id="idea-screenshot" accept="image/png,image/jpeg,image/webp">
+                </div>
+                <div id="idea-screenshot-preview" class="bulk-email-hint" style="display:none;"></div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Envoyer la demande</button>
+                    <button type="button" class="btn-secondary" id="idea-cancel">Annuler</button>
+                </div>
+                <div id="idea-feedback" class="edit-feedback"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Partager (export, OneDrive, email) -->
+    <div id="bulk-pdf-modal" class="modal">
+        <div class="modal-content pdf-modal-content">
+            <span class="close-modal bulk-pdf-close">&times;</span>
+            <h2>Partager</h2>
+            <p class="bulk-selection-hint bulk-selection-hint-top">Sélectionnez des lignes dans le tableau, puis choisissez une action ci‑dessous.</p>
+
+            <!-- Section 1 : Export vers un dossier (PC / réseau) -->
+            <section class="bulk-pdf-section bulk-pdf-section-export">
+                <h3 class="bulk-pdf-section-title"><span class="bulk-pdf-section-icon">📁</span> Exporter sur un emplacement (PC ou réseau)</h3>
+                <div class="bulk-pdf-section-body">
+                    <div class="bulk-actions-row">
+                        <label>Types de fichiers</label>
+                        <div class="bulk-pdf-options-row">
+                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-folder" value="pdf" checked> PDF</label>
+                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-folder" value="dxf" checked> DXF</label>
+                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-folder" value="dwg" checked> DWG</label>
+                        </div>
+                    </div>
+                    <div class="bulk-actions-row" id="bulk-pdf-folder-row">
+                        <label for="bulk-pdf-destination">Dossier de destination</label>
+                        <input type="text" id="bulk-pdf-destination" placeholder="\\\\serveur\\partage\\dossier ou C:\Temp\PDFs">
+                        <button id="bulk-pdf-pick-folder" class="btn-secondary">Choisir...</button>
+                    </div>
+                    <div class="bulk-pdf-options-row">
+                        <label class="bulk-checkbox"><input type="checkbox" id="bulk-pdf-subfolders" checked> Sous-dossier par plan</label>
+                        <label class="bulk-checkbox"><input type="checkbox" id="bulk-pdf-recursive" checked> Inclure sous-dossiers</label>
+                        <label class="bulk-checkbox"><input type="checkbox" id="bulk-pdf-prefix"> Préfixer par le N° plan</label>
+                        <label class="bulk-checkbox"><input type="checkbox" id="bulk-pdf-suffix-designation"> Désignation en suffixe</label>
+                    </div>
+                    <button id="bulk-export-pdfs" class="btn-primary btn-export-folder" disabled>Exporter les fichiers vers ce dossier</button>
+                </div>
+            </section>
+
+            <!-- Section 2 : Export vers OneDrive -->
+            <section class="bulk-pdf-section bulk-pdf-section-onedrive">
+                <h3 class="bulk-pdf-section-title"><span class="bulk-pdf-section-icon">☁️</span> Exporter vers OneDrive</h3>
+                <div class="bulk-pdf-section-body">
+                    <div class="bulk-actions-row">
+                        <label>Types de fichiers</label>
+                        <div class="bulk-pdf-options-row">
+                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-onedrive" value="pdf" checked> PDF</label>
+                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-onedrive" value="dxf" checked> DXF</label>
+                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-onedrive" value="dwg" checked> DWG</label>
+                        </div>
+                    </div>
+                    <div class="bulk-actions-row" id="bulk-pdf-onedrive-row">
+                        <label>Dossier OneDrive</label>
+                        <span id="bulk-pdf-onedrive-selected" class="bulk-onedrive-label">— Aucun dossier choisi</span>
+                        <button type="button" id="bulk-pdf-pick-onedrive" class="btn-secondary">Choisir un dossier OneDrive</button>
+                    </div>
+                    <div class="form-group bulk-onedrive-affix-block">
+                        <label id="bulk-onedrive-affix-label">Nom du sous-dossier par plan (OneDrive)</label>
+                        <p class="bulk-pdf-options-note bulk-onedrive-affix-hint">Une ou plusieurs étapes (préfixe ou suffixe) sur le <strong>nom du dossier</strong> créé pour chaque plan, pas sur les fichiers. Ex. plan <code>1234</code> + deux suffixes → dossier <code>1234_a_b</code>. Nécessite « Sous-dossier par plan » coché.</p>
+                        <div id="bulk-onedrive-affix-rows" class="bulk-onedrive-affix-rows" role="list" aria-labelledby="bulk-onedrive-affix-label"></div>
+                        <button type="button" id="bulk-onedrive-affix-add" class="btn-secondary btn-small">Ajouter un préfixe ou suffixe</button>
+                    </div>
+                    <p class="bulk-pdf-options-note">Les fichiers conservent leur nom d’origine ; les étapes ci-dessus ne modifient que le dossier du plan.</p>
+                    <button id="bulk-export-pdfs-onedrive" class="btn-primary btn-export-onedrive" disabled>Exporter les fichiers vers OneDrive</button>
+                    <div id="bulk-onedrive-share-link" class="bulk-email-hint" style="display:none; margin-top:0.6rem;"></div>
+                </div>
+            </section>
+
+            <!-- Section SharePoint / Business Central -->
+            <section class="bulk-pdf-section bulk-pdf-section-sharepoint-bc">
+                <h3 class="bulk-pdf-section-title"><span class="bulk-pdf-section-icon">📤</span> SharePoint + Business Central</h3>
+                <div class="bulk-pdf-section-body">
+                    <p class="bulk-pdf-options-note">Export vers la bibliothèque du site SharePoint configuré (<code>SHAREPOINT_SITE_URL</code>), puis mise à jour du champ lien sur l’article BC (PDF + DXF par défaut). Utilisez le même emplacement que le site Bureau d’études SolidWorks.</p>
+                    <div class="bulk-actions-row">
+                        <label>Types de fichiers</label>
+                        <div class="bulk-pdf-options-row">
+                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-sharepoint-bc" value="pdf" checked> PDF</label>
+                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-sharepoint-bc" value="dxf" checked> DXF</label>
+                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-sharepoint-bc" value="dwg"> DWG</label>
+                        </div>
+                    </div>
+                    <div class="bulk-actions-row" id="bulk-pdf-sharepoint-row">
+                        <label>Dossier SharePoint (bibliothèque du site)</label>
+                        <span id="bulk-pdf-sharepoint-selected" class="bulk-onedrive-label">— Aucun dossier choisi</span>
+                        <button type="button" id="bulk-pdf-pick-sharepoint" class="btn-secondary">Choisir un dossier…</button>
+                    </div>
+                    <label class="bulk-checkbox" style="margin: 0.35rem 0;">
+                        <input type="checkbox" id="bulk-sharepoint-update-bc" checked> Mettre à jour le lien sur l’article dans Business Central (champ configuré : <code>BC_ITEM_LINK_FIELD</code> ou détection automatique)
+                    </label>
+                    <p class="bulk-pdf-options-note">Les <strong>préfixes / suffixes</strong> du bloc OneDrive ci-dessus s’appliquent aussi au nom du sous-dossier par plan. « Sous-dossier par plan » doit être coché pour un lien SharePoint distinct par plan dans BC.</p>
+                    <button type="button" id="bulk-export-sharepoint-bc" class="btn-primary btn-export-sharepoint-bc" disabled>Exporter vers SharePoint + BC</button>
+                    <div id="bulk-sharepoint-bc-link" class="bulk-email-hint" style="display:none; margin-top:0.6rem;"></div>
+                </div>
+            </section>
+
+            <!-- Section 3 : Envoi par email -->
+            <section class="bulk-pdf-section bulk-pdf-section-email">
+                <h3 class="bulk-pdf-section-title"><span class="bulk-pdf-section-icon">✉️</span> Envoyer par email</h3>
+                <div class="bulk-pdf-section-body bulk-email-layout">
+                    <div class="bulk-actions-row" style="grid-column: 1 / -1;">
+                        <label>Types de fichiers</label>
+                        <div class="bulk-pdf-options-row">
+                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-email" value="pdf" checked> PDF</label>
+                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-email" value="dxf" checked> DXF</label>
+                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-email" value="dwg" checked> DWG</label>
+                        </div>
+                    </div>
+                    <div class="bulk-email-col bulk-email-col-recipients">
+                        <label>Destinataires — cochez les personnes à qui envoyer les fichiers</label>
+                        <input type="text" id="bulk-email-recipients-search" placeholder="Rechercher (nom ou email)..." class="bulk-email-recipients-search">
+                        <div class="bulk-email-recipients-select-actions">
+                            <button type="button" id="bulk-email-recipients-select-all" class="btn-secondary btn-small">Tout cocher</button>
+                            <button type="button" id="bulk-email-recipients-select-none" class="btn-secondary btn-small">Tout décocher</button>
+                            <span id="bulk-email-recipients-count" class="bulk-email-recipients-count">0 sélectionné(s)</span>
+                        </div>
+                        <div id="bulk-email-recipients-list" class="bulk-email-recipients-checkboxes" role="list"></div>
+                    </div>
+                    <div class="bulk-email-col bulk-email-col-form">
+                        <label for="bulk-email-subject">Objet</label>
+                        <input type="text" id="bulk-email-subject" value="" placeholder="Objet du mail (optionnel)">
+                        <label for="bulk-email-message">Message (optionnel)</label>
+                        <textarea id="bulk-email-message" rows="5" placeholder="Corps du mail (laissez vide pour le texte par défaut)"></textarea>
+                        <button id="bulk-email-pdfs" class="btn-primary" disabled>Envoyer les fichiers par email</button>
+                        <p class="bulk-email-hint">Envoi depuis votre compte Microsoft.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Modal envoi email pour un PDF -->
+    <div id="single-pdf-email-modal" class="modal">
+        <div class="modal-content single-pdf-email-modal-content">
+            <span class="close-modal single-pdf-email-close">&times;</span>
+            <h2>Envoyer un PDF par email</h2>
+            <form id="single-pdf-email-form" class="edit-form">
+                <div class="form-group">
+                    <label for="single-pdf-email-file">Fichier</label>
+                    <input type="text" id="single-pdf-email-file" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="single-pdf-email-to">Destinataire(s)</label>
+                    <input type="text" id="single-pdf-email-to" placeholder="prenom.nom@postforming.eu; autre@postforming.eu" required>
+                </div>
+                <div class="form-group">
+                    <label for="single-pdf-email-subject">Objet</label>
+                    <input type="text" id="single-pdf-email-subject" placeholder="Objet du mail">
+                </div>
+                <div class="form-group">
+                    <label for="single-pdf-email-message">Message (optionnel)</label>
+                    <textarea id="single-pdf-email-message" rows="4" placeholder="Votre message..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Envoyer</button>
+                    <button type="button" class="btn-secondary" id="single-pdf-email-cancel">Annuler</button>
+                </div>
+                <div id="single-pdf-email-feedback" class="edit-feedback"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Choisir un dossier SharePoint (site BE) -->
+    <div id="sharepoint-picker-modal" class="modal">
+        <div class="modal-content" style="max-width: 420px;">
+            <span class="close-modal sharepoint-picker-close">&times;</span>
+            <h3>Choisir un dossier SharePoint</h3>
+            <p id="sharepoint-picker-breadcrumb" class="onedrive-breadcrumb">Bibliothèque du site</p>
+            <div id="sharepoint-picker-list" class="onedrive-folder-list"></div>
+            <div class="bulk-actions-row" style="margin-top: 0.4rem;">
+                <input type="text" id="sharepoint-picker-new-folder-name" placeholder="Nom du nouveau dossier">
+                <button type="button" id="sharepoint-picker-create-folder" class="btn-secondary">Créer dossier</button>
+            </div>
+            <div id="sharepoint-picker-feedback" class="edit-feedback" style="display: none; margin-top: 0.35rem;"></div>
+            <div class="onedrive-picker-actions">
+                <button type="button" id="sharepoint-picker-select-here" class="btn-primary">Sélectionner ce dossier</button>
+                <button type="button" id="sharepoint-picker-back" class="btn-secondary" style="display: none;">Retour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Choisir un dossier OneDrive -->
+    <div id="onedrive-picker-modal" class="modal">
+        <div class="modal-content" style="max-width: 420px;">
+            <span class="close-modal onedrive-picker-close">&times;</span>
+            <h3>Choisir un dossier OneDrive</h3>
+            <p id="onedrive-picker-breadcrumb" class="onedrive-breadcrumb">Mon OneDrive</p>
+            <div id="onedrive-picker-list" class="onedrive-folder-list"></div>
+            <div class="bulk-actions-row" style="margin-top: 0.4rem;">
+                <input type="text" id="onedrive-picker-new-folder-name" placeholder="Nom du nouveau dossier">
+                <button type="button" id="onedrive-picker-create-folder" class="btn-secondary">Créer dossier</button>
+            </div>
+            <div id="onedrive-picker-feedback" class="edit-feedback" style="display: none; margin-top: 0.35rem;"></div>
+            <div class="onedrive-picker-actions">
+                <button type="button" id="onedrive-picker-select-here" class="btn-primary">Sélectionner ce dossier</button>
+                <button type="button" id="onedrive-picker-back" class="btn-secondary" style="display: none;">Retour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Extraction Excel -->
+    <div id="bulk-excel-modal" class="modal">
+        <div class="modal-content pdf-modal-content">
+            <span class="close-modal bulk-excel-close">&times;</span>
+            <h2>Extraction Excel</h2>
+            <p class="bulk-selection-hint" id="bulk-excel-hint">Sélectionnez les colonnes à inclure dans le fichier.</p>
+            <div class="bulk-excel-columns">
+                <div class="bulk-excel-columns-toolbar">
+                    <button type="button" id="bulk-excel-select-all" class="btn-secondary btn-small">Tout sélectionner</button>
+                    <button type="button" id="bulk-excel-select-none" class="btn-secondary btn-small">Tout désélectionner</button>
+                </div>
+                <div id="bulk-excel-columns-list" class="bulk-excel-columns-list"></div>
+            </div>
+            <div class="bulk-excel-actions">
+                <button type="button" id="bulk-excel-download" class="btn-primary">Télécharger le fichier Excel</button>
+                <button type="button" class="btn-secondary bulk-excel-close-btn">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Modifier en masse -->
+    <div id="bulk-edit-modal" class="modal">
+        <div class="modal-content pdf-modal-content">
+            <span class="close-modal bulk-edit-close">&times;</span>
+            <h2>Modifier en masse</h2>
+            <p class="bulk-selection-hint">Les champs renseignés ci-dessous seront appliqués à toutes les lignes sélectionnées. La désignation reste inchangée (propre à chaque ligne).</p>
+            <div class="bulk-actions" id="bulk-edit-actions">
+                <div class="bulk-actions-row form-group">
+                    <label for="bulk-edit-etat">Nouvel état</label>
+                    <select id="bulk-edit-etat">
+                        <option value="">— Ne pas modifier —</option>
+                    </select>
+                </div>
+                <div class="bulk-actions-row form-group">
+                    <label for="bulk-edit-client">Assigner au client</label>
+                    <select id="bulk-edit-client">
+                        <option value="">— Ne pas modifier —</option>
+                    </select>
+                </div>
+                <div class="bulk-actions-row form-group">
+                    <label for="bulk-edit-demandeur">Assigner au demandeur</label>
+                    <select id="bulk-edit-demandeur">
+                        <option value="">— Ne pas modifier —</option>
+                    </select>
+                </div>
+                <div class="bulk-actions-row form-group">
+                    <label for="bulk-edit-dessinateur">Assigner au dessinateur</label>
+                    <select id="bulk-edit-dessinateur">
+                        <option value="">— Ne pas modifier —</option>
+                    </select>
+                </div>
+                <div class="bulk-actions-row">
+                    <button id="bulk-edit-apply" class="btn-primary">Appliquer les modifications</button>
+                    <span id="bulk-edit-feedback" class="edit-feedback" style="margin-left: 0.5rem;"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal planning dessinateur -->
+    <div id="planning-dessinateur-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal planning-close">&times;</span>
+            <h2 id="planning-modal-title">Ajouter un dessinateur</h2>
+            <form id="planning-dessinateur-form" class="edit-form">
+                <input type="hidden" id="planning-dessinateur-id">
+                <div class="form-group">
+                    <label for="planning-dessinateur-nom">Dessinateur</label>
+                    <select id="planning-dessinateur-nom" required></select>
+                </div>
+
+                <div class="form-group">
+                    <label>Horaires</label>
+                    <div class="planning-horaires-grid">
+                        <div>
+                            <label for="planning-lundi-debut">Lundi</label>
+                            <div class="planning-horaire-row">
+                                <input type="time" id="planning-lundi-debut" aria-label="Lundi début">
+                                <input type="time" id="planning-lundi-midi-debut" aria-label="Lundi début midi">
+                                <input type="time" id="planning-lundi-midi-fin" aria-label="Lundi fin midi">
+                                <input type="time" id="planning-lundi-fin" aria-label="Lundi fin">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="planning-mardi-debut">Mardi</label>
+                            <div class="planning-horaire-row">
+                                <input type="time" id="planning-mardi-debut" aria-label="Mardi début">
+                                <input type="time" id="planning-mardi-midi-debut" aria-label="Mardi début midi">
+                                <input type="time" id="planning-mardi-midi-fin" aria-label="Mardi fin midi">
+                                <input type="time" id="planning-mardi-fin" aria-label="Mardi fin">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="planning-mercredi-debut">Mercredi</label>
+                            <div class="planning-horaire-row">
+                                <input type="time" id="planning-mercredi-debut" aria-label="Mercredi début">
+                                <input type="time" id="planning-mercredi-midi-debut" aria-label="Mercredi début midi">
+                                <input type="time" id="planning-mercredi-midi-fin" aria-label="Mercredi fin midi">
+                                <input type="time" id="planning-mercredi-fin" aria-label="Mercredi fin">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="planning-jeudi-debut">Jeudi</label>
+                            <div class="planning-horaire-row">
+                                <input type="time" id="planning-jeudi-debut" aria-label="Jeudi début">
+                                <input type="time" id="planning-jeudi-midi-debut" aria-label="Jeudi début midi">
+                                <input type="time" id="planning-jeudi-midi-fin" aria-label="Jeudi fin midi">
+                                <input type="time" id="planning-jeudi-fin" aria-label="Jeudi fin">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="planning-vendredi-debut">Vendredi</label>
+                            <div class="planning-horaire-row">
+                                <input type="time" id="planning-vendredi-debut" aria-label="Vendredi début">
+                                <input type="time" id="planning-vendredi-midi-debut" aria-label="Vendredi début midi">
+                                <input type="time" id="planning-vendredi-midi-fin" aria-label="Vendredi fin midi">
+                                <input type="time" id="planning-vendredi-fin" aria-label="Vendredi fin">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Congés</label>
+                    <div id="planning-conges-list"></div>
+                    <button type="button" id="btn-add-conge" class="btn-secondary">+ Ajouter un congé</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Absences</label>
+                    <div id="planning-absences-list"></div>
+                    <button type="button" id="btn-add-absence" class="btn-secondary">+ Ajouter une absence</button>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Enregistrer</button>
+                    <button type="button" class="btn-secondary planning-close">Annuler</button>
+                </div>
+                <div id="planning-feedback" class="edit-feedback"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de sélection des valeurs de colonne -->
+    <div id="column-values-modal" class="modal">
+        <div class="modal-content" style="max-width: 520px;">
+            <span class="close-modal column-values-close">&times;</span>
+            <h2 id="column-values-title">Sélectionner des valeurs</h2>
+            <div style="margin-bottom: 1rem;">
+                <input type="text" id="column-values-search" placeholder="Rechercher une valeur..." style="width: 100%;">
+            </div>
+            <div class="etat-filter-body" id="column-values-body">
+                <!-- Valeurs chargées dynamiquement -->
+            </div>
+            <div class="form-actions" style="margin-top: 1rem;">
+                <button type="button" class="btn-primary" id="column-values-apply">Appliquer</button>
+                <button type="button" class="btn-secondary" id="column-values-clear">Tout effacer</button>
+                <button type="button" class="btn-secondary column-values-close">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal d'ajout -->
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal add-close">&times;</span>
+            <h2 id="add-modal-title">Ajouter un nouveau projet</h2>
+            <form id="add-form" class="edit-form">
+                <div class="form-group">
+                    <label for="add-plan-type">Type de plan <span style="color: var(--danger);">*</span></label>
+                    <select id="add-plan-type" required>
+                        <option value="">-- Choisir un type --</option>
+                        <option value="ensemble">Ensemble</option>
+                        <option value="composant">Composant</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="add-planNumber">N° Plan (auto) <span style="color: var(--danger);">*</span></label>
+                    <input type="text" id="add-planNumber" name="N°Plan" required readonly placeholder="Sélectionnez un type">
+                </div>
+                <div class="form-group">
+                    <label for="add-designation">Désignation <span style="color: var(--danger);">*</span></label>
+                    <input type="text" id="add-designation" name="designation" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-longueur">Dimensions (L × P × H)</label>
+                    <div class="inline-field">
+                        <input type="number" id="add-longueur" name="longueur" placeholder="Longueur" step="1" min="0">
+                        <input type="number" id="add-profondeur" name="profondeur" placeholder="Profondeur" step="1" min="0">
+                        <input type="number" id="add-hauteur" name="hauteur" placeholder="Hauteur" step="1" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="add-client">Client</label>
+                    <div class="inline-field">
+                        <select id="add-client" name="Client">
+                            <option value="">-- Sélectionner un client --</option>
+                        </select>
+                        <button type="button" id="btn-add-client-inline" class="btn-secondary">+ Ajouter</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="add-ville">Ville</label>
+                    <input type="text" id="add-ville" name="Ville">
+                </div>
+                <div class="form-group">
+                    <label for="add-finition">Finition</label>
+                    <input type="text" id="add-finition" name="finition">
+                </div>
+                <div class="form-group">
+                    <label for="add-date-livraison">Date livraison</label>
+                    <input type="date" id="add-date-livraison" name="date_livraison">
+                </div>
+                <div class="form-group admin-only-block">
+                    <label for="add-temps-dev">Temps dev (h)</label>
+                    <input type="number" id="add-temps-dev" name="temps_dev" min="0" step="0.25" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label for="add-dessinateur">Dessinateur</label>
+                    <select id="add-dessinateur" name="dessinateur">
+                        <option value="">-- Sélectionner un dessinateur --</option>
+                    </select>
+                </div>
+                <div class="form-group only-ensemble">
+                    <label for="add-demandeur">Demandeur</label>
+                    <div class="inline-field">
+                        <select id="add-demandeur" name="demandeur">
+                            <option value="">-- Sélectionner un demandeur --</option>
+                        </select>
+                        <button type="button" id="btn-add-demandeur-inline" class="btn-secondary">+ Ajouter</button>
+                    </div>
+                </div>
+                <div class="form-group only-ensemble">
+                    <label for="add-cdc">Chemin CDC (serveur fichiers)</label>
+                    <div class="inline-field">
+                        <input type="text" id="add-cdc" name="CDC" placeholder="\\\\POST-FIC\\plans\\...">
+                        <button type="button" id="btn-add-cdc-pick" class="btn-secondary">Parcourir serveur</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="add-create-folders" name="create_folders" checked>
+                        Créer les dossiers sur le serveur
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Ajouter</button>
+                    <button type="button" class="btn-secondary" id="cancel-add">Annuler</button>
+                </div>
+                <div id="add-feedback" class="edit-feedback"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal d'édition -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal edit-close">&times;</span>
+            <h2 id="edit-modal-title">Modifier le projet</h2>
+            <form id="edit-form" class="edit-form">
+                <input type="hidden" id="edit-planNumber">
+                <div class="form-group">
+                    <label for="edit-designation">Désignation</label>
+                    <input type="text" id="edit-designation" name="designation" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-longueur">Dimensions (L × P × H)</label>
+                    <div class="inline-field">
+                        <input type="number" id="edit-longueur" name="longueur" placeholder="Longueur" step="1" min="0">
+                        <input type="number" id="edit-profondeur" name="profondeur" placeholder="Profondeur" step="1" min="0">
+                        <input type="number" id="edit-hauteur" name="hauteur" placeholder="Hauteur" step="1" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-client">Client</label>
+                    <div class="inline-field">
+                        <select id="edit-client" name="Client">
+                            <option value="">-- Sélectionner un client --</option>
+                        </select>
+                        <button type="button" id="btn-add-client-inline-edit" class="btn-secondary">+ Ajouter</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-chantier">Chantier</label>
+                    <input type="text" id="edit-chantier" name="chantier">
+                </div>
+                <div class="form-group">
+                    <label for="edit-ville">Ville</label>
+                    <input type="text" id="edit-ville" name="Ville">
+                </div>
+                <div class="form-group">
+                    <label for="edit-finition">Finition</label>
+                    <input type="text" id="edit-finition" name="finition">
+                </div>
+                <div class="form-group">
+                    <label for="edit-date-livraison">Date livraison</label>
+                    <input type="date" id="edit-date-livraison" name="date_livraison">
+                </div>
+                <div class="form-group only-ensemble admin-only-block">
+                    <label for="edit-temps-dev">Temps dev (h)</label>
+                    <input type="number" id="edit-temps-dev" name="temps_dev" min="0" step="0.25" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label for="edit-etat">État</label>
+                    <select id="edit-etat" name="etat">
+                        <option value="">-- Sélectionner un état --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-dessinateur">Dessinateur</label>
+                    <select id="edit-dessinateur" name="dessinateur">
+                        <option value="">-- Sélectionner un dessinateur --</option>
+                    </select>
+                </div>
+                <div class="form-group only-ensemble">
+                    <label for="edit-demandeur">Demandeur</label>
+                    <select id="edit-demandeur" name="demandeur">
+                        <option value="">-- Sélectionner un demandeur --</option>
+                    </select>
+                </div>
+                <div class="form-group only-ensemble">
+                    <label for="edit-cdc">Chemin CDC (serveur fichiers)</label>
+                    <div class="inline-field">
+                        <input type="text" id="edit-cdc" name="CDC" placeholder="\\\\POST-FIC\\plans\\...">
+                        <button type="button" id="btn-edit-cdc-pick" class="btn-secondary">Parcourir serveur</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-commentaire">Commentaire</label>
+                    <textarea id="edit-commentaire" name="commentaire" rows="3" placeholder="Commentaire libre..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Enregistrer</button>
+                    <button type="button" class="btn-secondary" id="cancel-edit">Annuler</button>
+                </div>
+                <div id="edit-feedback" class="edit-feedback"></div>
+            </form>
+        </div>
+    </div>
+
+    <template id="bulk-onedrive-affix-row-template">
+        <div class="bulk-onedrive-affix-row" role="listitem">
+            <select class="bulk-onedrive-affix-mode" aria-label="Préfixe ou suffixe">
+                <option value="prefix">Préfixe</option>
+                <option value="suffix" selected>Suffixe</option>
+            </select>
+            <select class="bulk-onedrive-affix-column" aria-label="Colonne">
+                <option value="">— Colonne —</option>
+                <option value="N°Plan">N° Plan</option>
+                <option value="designation">Désignation</option>
+                <option value="Client">Client</option>
+                <option value="chantier">Chantier</option>
+                <option value="Ville">Ville</option>
+                <option value="finition">Finition</option>
+                <option value="dessinateur">Dessinateur</option>
+                <option value="demandeur">Demandeur</option>
+                <option value="etat">État</option>
+            </select>
+            <button type="button" class="btn-secondary btn-small bulk-onedrive-affix-remove" title="Retirer cette étape">Retirer</button>
+        </div>
+    </template>
+
+    <script src="status.js?v=1"></script>
+    <script src="planning.js?v=1"></script>
+    <script src="debit_panneaux.js?v=3"></script>
+    <script src="app.js?v=17"></script>
+
+    <!-- ===== Modale Cas d'emploi Business Central ===== -->
+    <div id="bc-usage-modal" class="bc-usage-modal" role="dialog" aria-modal="true" aria-labelledby="bc-usage-modal-label">
+        <div class="bc-usage-modal-overlay" id="bc-usage-modal-overlay"></div>
+        <div class="bc-usage-modal-card">
+            <div class="bc-usage-modal-header">
+                <span class="bc-usage-modal-icon" aria-hidden="true">📘</span>
+                <h2 class="bc-usage-modal-title" id="bc-usage-modal-label">Cas d'emploi BC</h2>
+                <button class="bc-usage-modal-close" id="bc-usage-modal-close" aria-label="Fermer">✕</button>
+            </div>
+            <div class="bc-usage-modal-body"></div>
+        </div>
+    </div>
+
+</body>
+</html>
