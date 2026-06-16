@@ -1,1206 +1,983 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Bureau d'études - Developpement</title>
-    <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#2563eb">
-    <link rel="icon" type="image/svg+xml" href="img/logo.svg">
-    <link rel="stylesheet" href="style/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MB Works — Bureau d'études MB Draft</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.4.0/dist/tabler-icons.min.css">
+<style>
+/* ─── TOKENS ─── */
+:root {
+  --bg:       #0D0F14;
+  --bg2:      #13161D;
+  --bg3:      #1A1E28;
+  --border:   #252A38;
+  --border2:  #2E3447;
+  --accent:   #1D9E75;
+  --accent2:  #0F6E56;
+  --accent-g: #9EFCD0;
+  --text:     #E8EAF0;
+  --text2:    #8B92A8;
+  --text3:    #555E78;
+  --danger:   #E24B4A;
+  --warning:  #EF9F27;
+  --info:     #3B82F6;
+  --mono:     'JetBrains Mono', 'Fira Code', monospace;
+  --sans:     'Inter', system-ui, sans-serif;
+  --nav-w:    220px;
+  --radius:   8px;
+  --radius-lg:12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; font-size: 14px; }
+
+/* ─── NAV ─── */
+#nav {
+  width: var(--nav-w); flex-shrink: 0; background: var(--bg2);
+  border-right: 1px solid var(--border); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; height: 100vh; z-index: 50;
+}
+.nav-logo {
+  padding: 18px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-mark {
+  width: 32px; height: 32px; background: var(--accent); border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px; color: #fff; letter-spacing: -.5px;
+  flex-shrink: 0;
+}
+.logo-text { font-size: 15px; font-weight: 600; color: var(--text); }
+.logo-sub  { font-size: 11px; color: var(--text3); }
+.nav-section { padding: 12px 8px 4px; }
+.nav-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; padding: 0 8px 6px; }
+.nav-item {
+  display: flex; align-items: center; gap: 9px; padding: 8px 10px;
+  font-size: 13px; color: var(--text2); cursor: pointer; border-radius: var(--radius);
+  transition: background .12s, color .12s; user-select: none;
+}
+.nav-item:hover  { background: var(--bg3); color: var(--text); }
+.nav-item.active { background: rgba(29,158,117,.12); color: var(--accent); font-weight: 500; }
+.nav-item i { font-size: 17px; flex-shrink: 0; }
+.nav-bottom {
+  margin-top: auto; padding: 12px; border-top: 1px solid var(--border);
+}
+.nav-conn {
+  display: flex; align-items: center; gap: 6px; padding: 8px 10px;
+  background: var(--bg3); border-radius: var(--radius); font-size: 12px; color: var(--text2);
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+.dot.ok  { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+.dot.err { background: var(--danger); }
+.dot.pulse { animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ─── MAIN ─── */
+#main { margin-left: var(--nav-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ─── TOPBAR ─── */
+.topbar {
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 12px 24px; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 40;
+}
+.topbar-title { font-size: 16px; font-weight: 600; }
+.topbar-sub   { font-size: 12px; color: var(--text3); margin-top: 1px; }
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;
+  font-size: 13px; font-weight: 500; border: 1px solid var(--border2); border-radius: var(--radius);
+  cursor: pointer; color: var(--text); background: var(--bg3); transition: all .15s;
+  white-space: nowrap; font-family: var(--sans);
+}
+.btn:hover { background: var(--border); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn i { font-size: 15px; }
+.btn-accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-accent:hover:not(:disabled) { background: var(--accent2); border-color: var(--accent2); }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-icon { width: 32px; height: 32px; padding: 0; justify-content: center; }
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;
+}
+.card-head {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 13px; font-weight: 500; color: var(--text);
+}
+.card-body { padding: 16px; }
+
+/* ─── METRICS ─── */
+.metrics { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+.metric { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
+.metric-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing:.05em; margin-bottom:6px; }
+.metric-value { font-size: 26px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+.metric-value span { font-size: 13px; font-weight: 400; color: var(--text2); }
+
+/* ─── TABLE ─── */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  text-align: left; font-size: 11px; font-weight: 500; color: var(--text3);
+  padding: 9px 14px; border-bottom: 1px solid var(--border);
+  text-transform: uppercase; letter-spacing:.05em; background: var(--bg3);
+}
+td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,.02); }
+.mono { font-family: var(--mono); font-size: 12px; }
+.row-actions { display: flex; gap: 4px; opacity: 0; transition: opacity .15s; }
+tr:hover .row-actions { opacity: 1; }
+
+/* ─── BADGES ─── */
+.badge {
+  display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px;
+  border-radius: 20px; font-size: 11px; font-weight: 500;
+}
+.b-green  { background: rgba(29,158,117,.15); color: var(--accent-g); }
+.b-blue   { background: rgba(59,130,246,.15); color: #93C5FD; }
+.b-amber  { background: rgba(239,159,39,.15); color: #FCD34D; }
+.b-gray   { background: var(--bg3); color: var(--text2); }
+.b-red    { background: rgba(226,75,74,.15); color: #FCA5A5; }
+
+/* ─── FORMS ─── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label { font-size: 12px; font-weight: 500; color: var(--text2); }
+.form-hint  { font-size: 11px; color: var(--text3); }
+input, select, textarea {
+  font-family: var(--sans); font-size: 13px; color: var(--text);
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius);
+  padding: 8px 10px; width: 100%; transition: border-color .15s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,158,117,.1);
+}
+select option { background: var(--bg3); }
+
+/* ─── TOGGLE ─── */
+.toggle-g { display: flex; gap: 4px; }
+.topt {
+  flex: 1; padding: 7px; text-align: center; border: 1px solid var(--border2);
+  border-radius: var(--radius); cursor: pointer; font-size: 12px; color: var(--text2); transition: all .15s;
+}
+.topt.on { border-color: var(--accent); background: rgba(29,158,117,.12); color: var(--accent); font-weight: 500; }
+
+/* ─── MODAL ─── */
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+}
+.modal {
+  background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-lg);
+  width: 520px; max-width: 95vw; overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,.5);
+}
+.modal-head {
+  padding: 16px 18px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 15px; font-weight: 600; }
+.modal-body  { padding: 20px; max-height: 70vh; overflow-y: auto; }
+.modal-foot  { padding: 14px 18px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ─── PAGES ─── */
+.page { display: none; padding: 24px; flex: 1; }
+.page.active { display: block; }
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* ─── NESTING CANVAS ─── */
+.nest-canvas {
+  background: var(--bg3); border-radius: var(--radius); min-height: 240px;
+  position: relative; overflow: hidden;
+}
+.nest-placeholder {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px;
+  color: var(--text3); font-size: 13px;
+}
+.nest-placeholder i { font-size: 36px; }
+.eff-bar { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.eff-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .6s ease; }
+
+/* ─── PIECES ─── */
+.piece-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 10px 12px; margin-bottom: 6px; transition: border-color .15s;
+}
+.piece-card:hover { border-color: var(--border2); }
+.piece-inp { background: var(--bg2); border: 1px solid var(--border); padding: 4px 7px; border-radius: 5px; width: 58px; text-align: center; font-family: var(--mono); font-size: 12px; }
+.piece-inp:focus { outline: none; border-color: var(--accent); }
+
+/* ─── SPINNER ─── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 4px; }
+
+/* ─── API STATUS ─── */
+.api-banner {
+  padding: 10px 16px; background: rgba(226,75,74,.08); border: 1px solid rgba(226,75,74,.2);
+  border-radius: var(--radius); font-size: 12px; color: #FCA5A5; margin-bottom: 16px;
+  display: none; align-items: center; gap: 8px;
+}
+.api-banner.show { display: flex; }
+
+/* ─── SETTINGS ─── */
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row label { color: var(--text2); }
+.settings-val { font-family: var(--mono); font-size: 11px; color: var(--text3); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tab-bar { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.tab { padding: 9px 14px; font-size: 13px; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s; }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  :root { --nav-w: 0px; }
+  #nav { display: none; }
+  .metrics { grid-template-columns: 1fr 1fr; }
+  .two-col { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
-    <div id="global-status" class="global-status is-hidden" role="status" aria-live="polite">
-        <div class="spinner" aria-hidden="true"></div>
-        <div class="global-status-text">Chargement...</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo">
+    <div class="logo-mark">MB</div>
+    <div>
+      <div class="logo-text">MB Works</div>
+      <div class="logo-sub">MB Draft</div>
     </div>
-    <div class="app-container">
-        <!-- Sidebar : logo, navigation, utilisateur -->
-        <aside class="sidebar">
-            <div class="logo">
-                <img src="img/logo.png" alt="POST FORMING INDUSTRIES">
-                <h2 class="logo-title">Bureau d'études</h2>
-            </div>
-            <nav class="sidebar-nav" aria-label="Navigation principale">
-                <ul>
-                    <li class="active"><a href="#" data-page="dashboard">📋 Plans d'ensemble</a></li>
-                    <li><a href="#" data-page="components">📦 Plans de composants</a></li>
-                    <li><a href="#" data-page="projects">📁 Tous les plans</a></li>
-                    <li id="nav-remontee-prod" style="display: none;"><a href="#" data-page="remontee-prod">🏭 Remontée de prod</a></li>
-                    <li id="nav-planning" style="display: none;"><a href="#" data-page="planning">📅 Planning</a></li>
-                    <li id="nav-deleted-plans" style="display: none;"><a href="#" data-page="deleted-plans">🗑️ Plans supprimés</a></li>
-                    <li id="nav-debit-panneaux" style="display: none;"><a href="#" data-page="debit-panneaux">📐 Débit de panneaux</a></li>
-                    <li id="nav-admin" style="display: none;"><a href="admin.html" data-page="admin">🔐 Administration</a></li>
-                </ul>
-            </nav>
-            <div class="user-profile">
-                <div class="avatar" id="user-avatar">AD</div>
-                <div class="info">
-                    <p class="name" id="user-name" title="">Chargement...</p>
-                    <p class="role" id="user-role">Utilisateur</p>
-                    <div class="auth-actions">
-                        <a id="login-link" href="/login" class="auth-link" style="display: none;">Se connecter</a>
-                        <a id="logout-link" href="/logout" class="auth-link" style="display: none;">Se déconnecter</a>
-                    </div>
-                </div>
-            </div>
-            <div class="connected-users" id="connected-users" title="Utilisateurs avec une session active">
-                <span class="connected-users-icon" aria-hidden="true">👥</span>
-                <span class="connected-users-count" id="connected-users-count">—</span>
-                <span class="connected-users-label">connecté(s)</span>
-            </div>
-        </aside>
-
-        <!-- Zone principale : en-tête + contenu -->
-        <main class="main-content">
-            <header class="page-header">
-                <div class="page-header-title">
-                    <h1 id="page-title">Plans d'ensemble</h1>
-                    <p class="page-subtitle" id="page-subtitle">Industrie du bois · gestion des plans et ateliers</p>
-                </div>
-                <div class="page-header-actions">
-                    <div class="search-bar">
-                        <input type="text" id="searchInput" placeholder="Rechercher un projet, client...">
-                        <span id="project-count" class="project-count" title="Nombre de projets affichés">0 projet(s)</span>
-                    </div>
-                    <div id="notifications-bell-wrap" class="notifications-bell-wrap" style="display:none;">
-                        <button id="notifications-bell-btn" class="btn-secondary notifications-bell-btn" type="button" title="Notifications">
-                            <span aria-hidden="true">🔔</span>
-                            <span id="notifications-bell-badge" class="notifications-bell-badge is-hidden">0</span>
-                        </button>
-                        <div id="notifications-panel" class="notifications-panel is-hidden">
-                            <div class="notifications-panel-header">
-                                <strong>Notifications</strong>
-                                <button id="notifications-refresh-btn" type="button" class="btn-secondary btn-small">Actualiser</button>
-                            </div>
-                            <div id="notifications-list" class="notifications-list"></div>
-                        </div>
-                    </div>
-                    <div class="actions-bar">
-                        <button id="btn-add-project" class="btn-add-project" style="display: none;">
-                            <span>➕</span> Ajouter un projet
-                        </button>
-                        <button id="open-idea-modal" class="btn-secondary" title="Proposer une amelioration">
-                            <span>💡</span> Proposer une idee
-                        </button>
-                        <button id="open-bulk-pdf-modal" class="btn-primary btn-bulk-pdf" disabled title="Exporter, OneDrive, email">
-                            <span>🔗</span> Partager
-                        </button>
-                        <button id="open-bulk-edit-modal" class="btn-primary btn-bulk-edit" disabled title="Modifier l'état, le client ou le demandeur des lignes sélectionnées">
-                            <span>✏️</span> Modifier en masse
-                        </button>
-                        <button id="open-bulk-excel-modal" class="btn-primary btn-bulk-excel" disabled title="Exporter les lignes sélectionnées en Excel">
-                            <span>📊</span> Extraction Excel
-                        </button>
-                        <span id="bulk-selected-count" class="bulk-selected-count">0 sélectionné</span>
-                        <button id="bulk-clear-selection" class="btn-secondary" title="Vider la sélection">Vider</button>
-                        <button id="btn-sync-db" class="btn-sync-db" title="Synchroniser depuis la base de données">
-                            <span>🔄</span> Synchroniser
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <div class="view-container">
-            <!-- Dashboard View -->
-            <div id="dashboard-view" class="view active">
-                <div class="kpi-grid">
-                    <div class="kpi-card" data-kpi-filter="total" role="button" tabindex="0" title="Cliquer pour afficher tous les projets">
-                        <h3>Total Projets</h3>
-                        <p class="value" id="kpi-total">0</p>
-                    </div>
-                    <div class="kpi-card warning" data-kpi-filter="ongoing" role="button" tabindex="0" title="Cliquer pour afficher les projets en cours">
-                        <h3>En Cours</h3>
-                        <p class="value" id="kpi-ongoing">0</p>
-                    </div>
-                    <div class="kpi-card accent" data-kpi-filter="validation" role="button" tabindex="0" title="Cliquer pour afficher les projets en validation">
-                        <h3>En Validation</h3>
-                        <p class="value" id="kpi-validation">0</p>
-                    </div>
-                    <div class="kpi-card success" data-kpi-filter="completed" role="button" tabindex="0" title="Cliquer pour afficher les projets terminés">
-                        <h3>Terminés</h3>
-                        <p class="value" id="kpi-completed">0</p>
-                    </div>
-                    <div class="kpi-card danger" data-kpi-filter="delayed" role="button" tabindex="0" title="Cliquer pour afficher les projets en retard">
-                        <h3>Retards</h3>
-                        <p class="value" id="kpi-delayed">0</p>
-                    </div>
-                </div>
-
-                <div class="section-header">
-                    <h2 id="projects-section-title">Plans d'ensemble</h2>
-                    <div class="section-header-actions">
-                        <div class="dropdown-columns-wrap">
-                            <button type="button" id="btn-columns-toggle" class="btn-secondary" aria-haspopup="true" aria-expanded="false">Colonnes</button>
-                            <div id="columns-dropdown" class="dropdown-columns" role="menu" hidden>
-                                <div class="dropdown-columns-list" id="columns-checkboxes"></div>
-                            </div>
-                        </div>
-                        <button id="clearFilters" class="btn-clear-filters">Effacer tous les filtres</button>
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <table class="projects-table">
-                        <thead>
-                            <tr>
-                                <th class="select-column">
-                                    <input type="checkbox" id="select-all-projects" title="Tout sélectionner">
-                                </th>
-                                <th class="col-plan-number" data-column="N°Plan">
-                                    <div class="filter-header">
-                                        <span>N° Plan</span>
-                                        <input type="text" class="column-filter" data-column="N°Plan" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list" data-column="N°Plan" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th data-column="designation">
-                                    <div class="filter-header">
-                                        <span>Désignation</span>
-                                        <input type="text" class="column-filter" data-column="designation" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list" data-column="designation" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th data-column="dimensions">
-                                    <div class="filter-header">
-                                        <span>Dimensions</span>
-                                        <input type="text" class="column-filter" data-column="dimensions" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list" data-column="dimensions" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th data-column="Client">
-                                    <div class="filter-header">
-                                        <span>Client</span>
-                                        <input type="text" class="column-filter" data-column="Client" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list" data-column="Client" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th data-column="chantier">
-                                    <div class="filter-header">
-                                        <span>Chantier</span>
-                                        <input type="text" class="column-filter" data-column="chantier" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list" data-column="chantier" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th data-column="Ville">
-                                    <div class="filter-header">
-                                        <span>Ville</span>
-                                        <input type="text" class="column-filter" data-column="Ville" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list" data-column="Ville" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th data-column="finition">
-                                    <div class="filter-header">
-                                        <span>Finition</span>
-                                        <input type="text" class="column-filter" data-column="finition" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list" data-column="finition" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th data-column="dessinateur">
-                                    <div class="filter-header">
-                                        <span>Dessinateur</span>
-                                        <input type="text" class="column-filter" data-column="dessinateur" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list" data-column="dessinateur" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th data-column="demandeur">
-                                    <div class="filter-header">
-                                        <span>Demandeur</span>
-                                        <input type="text" class="column-filter" data-column="demandeur" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list" data-column="demandeur" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th data-column="etat">
-                                    <div class="filter-header">
-                                        <span>État</span>
-                                        <input type="text" class="column-filter" data-column="etat" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list" data-column="etat" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th class="admin-only only-ensemble" data-column="temps_dev">
-                                    <div class="filter-header">
-                                        <span>Temps dev (h)</span>
-                                        <input type="text" class="column-filter" data-column="temps_dev" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list" data-column="temps_dev" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th class="actions-column">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="projects-table-body">
-                            <!-- Rows will be populated by JS -->
-                        </tbody>
-                    </table>
-                </div>
-                <div id="pagination-bar" class="pagination-bar">
-                    <button type="button" id="pagination-first" class="btn-secondary" title="Première page">« Première</button>
-                    <button type="button" id="pagination-prev" class="btn-secondary" title="Page précédente">← Précédent</button>
-                    <span id="pagination-info" class="pagination-info">Page 1 / 1</span>
-                    <button type="button" id="pagination-next" class="btn-secondary" title="Page suivante">Suivant →</button>
-                    <button type="button" id="pagination-last" class="btn-secondary" title="Dernière page">Dernière »</button>
-                </div>
-            </div>
-
-            <!-- Plans supprimés (admin — archive base) -->
-            <div id="deleted-plans-view" class="view">
-                <div class="section-header">
-                    <h2>Plans supprimés</h2>
-                    <div class="section-header-actions">
-                        <button type="button" id="deleted-plans-refresh" class="btn-secondary">Actualiser</button>
-                    </div>
-                </div>
-                <p class="planning-hint">Copie des lignes retirées des tables actives (DEV / DEV_Composants), conservée pour consultation.</p>
-                <div id="deleted-plans-feedback" class="edit-feedback is-hidden"></div>
-                <div class="table-container">
-                    <table class="projects-table">
-                        <thead>
-                            <tr>
-                                <th>N° Plan</th>
-                                <th>Désignation</th>
-                                <th data-deleted-col-header="Client">
-                                    <div class="filter-header">
-                                        <span>Client</span>
-                                        <input type="text" class="deleted-plans-col-filter" data-deleted-col="Client" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list btn-deleted-plans-filter-list" data-deleted-col="Client" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th data-deleted-col-header="chantier">
-                                    <div class="filter-header">
-                                        <span>Chantier</span>
-                                        <input type="text" class="deleted-plans-col-filter" data-deleted-col="chantier" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list btn-deleted-plans-filter-list" data-deleted-col="chantier" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th data-deleted-col-header="Ville">
-                                    <div class="filter-header">
-                                        <span>Ville</span>
-                                        <input type="text" class="deleted-plans-col-filter" data-deleted-col="Ville" placeholder="Filtrer...">
-                                        <button type="button" class="btn-filter-list btn-deleted-plans-filter-list" data-deleted-col="Ville" title="Filtrer par liste">≡</button>
-                                    </div>
-                                </th>
-                                <th>Type</th>
-                                <th>Table source</th>
-                                <th>Supprimé le</th>
-                                <th>Supprimé par</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="deleted-plans-body"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Planning View -->
-            <div id="planning-view" class="view">
-                <div class="section-header">
-                    <h2>Planning dessinateurs</h2>
-                </div>
-
-                <div class="planning-team-panel">
-                    <div class="section-header" style="margin-bottom: 0.5rem;">
-                        <div class="planning-hint">Cliquez sur un dessinateur pour régler ses horaires, congés et absences.</div>
-                        <button id="btn-add-dessinateur-planning" class="btn-secondary">+ Ajouter un dessinateur</button>
-                    </div>
-                    <div id="planning-dessinateurs-list" class="planning-team-list"></div>
-                </div>
-
-                <div class="planning-grid">
-                    <div class="planning-card">
-                        <div class="section-header" style="margin-bottom: 0.5rem;">
-                            <h3 style="font-size: 1.1rem;">Attribution des projets à traiter</h3>
-                            <button id="btn-refresh-planning-assignments" class="btn-secondary">Actualiser</button>
-                        </div>
-
-
-                        <div id="planning-assignments-summary" class="planning-summary"></div>
-
-                        <div class="table-container" style="max-height: 360px;">
-                            <table class="planning-assignments-table">
-                                <thead>
-                                    <tr>
-                                        <th>N° Plan</th>
-                                        <th>Désignation</th>
-                                        <th>État</th>
-                                        <th>Temps dev</th>
-                                        <th>Date prévue</th>
-                                        <th>Dessinateur</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="planning-assignments-body"></tbody>
-                            </table>
-                        </div>
-
-                        <div id="planning-assignments-feedback" class="edit-feedback"></div>
-                        <div id="planning-weekly-view" class="planning-weekly-view"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Débit de panneaux (admin — BC + optimisation) -->
-            <div id="debit-panneaux-view" class="view">
-                <div class="section-header">
-                    <h2>Débit de panneaux</h2>
-                    <div class="section-header-actions">
-                        <button type="button" id="debit-sync-bc" class="btn-secondary" title="Recharger la liste depuis Business Central">Synchroniser BC</button>
-                    </div>
-                </div>
-                <p id="debit-bc-hint" class="debit-bc-hint planning-hint" role="status"></p>
-                <div class="planning-card debit-card" style="margin-bottom:.75rem;">
-                    <h3 class="debit-card-title">Réglages</h3>
-                    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-                        <div class="form-group" style="min-width:220px;">
-                            <label for="debit-margin-edge">Distance bord panneau (mm)</label>
-                            <input type="number" id="debit-margin-edge" class="debit-input-num" min="0" step="1" value="30">
-                        </div>
-                        <div class="form-group" style="min-width:220px;">
-                            <label for="debit-gap-between">Distance entre pièces (mm)</label>
-                            <input type="number" id="debit-gap-between" class="debit-input-num" min="0" step="1" value="4">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="debit-grid">
-                    <div class="planning-card debit-card">
-                        <h3 class="debit-card-title">Matériau</h3>
-                        <div class="form-group">
-                            <label for="debit-material-search">Filtrer par désignation / référence</label>
-                            <input type="text" id="debit-material-search" class="debit-input-text" placeholder="Ex: compact, MP00003, stratifié...">
-                        </div>
-                        <div class="form-group" style="display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:end;">
-                            <div>
-                            <label for="debit-material-select">Article / panneau (Business Central)</label>
-                            <select id="debit-material-select">
-                                <option value="">— Chargement depuis Business Central… —</option>
-                            </select>
-                            </div>
-                            <button type="button" id="debit-add-material" class="btn-secondary">+ Ajouter</button>
-                        </div>
-                        <p id="debit-material-info" class="planning-hint"></p>
-                        <div id="debit-selected-materials" class="debit-material-sections"></div>
-                    </div>
-
-                    <div class="planning-card debit-card">
-                        <h3 class="debit-card-title">Pièces à découper <span class="debit-unit">(mm)</span></h3>
-                        <div class="table-container debit-table-wrap">
-                            <table class="projects-table debit-table">
-                                <thead>
-                                    <tr>
-                                        <th>Libellé</th>
-                                        <th>Longueur</th>
-                                        <th>Largeur</th>
-                                        <th>Qté</th>
-                                        <th>Matière</th>
-                                        <th>Chant L1</th>
-                                        <th>Chant L2</th>
-                                        <th>Chant l1</th>
-                                        <th>Chant l2</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="debit-pieces-body"></tbody>
-                            </table>
-                        </div>
-                        <button type="button" id="debit-add-piece" class="btn-secondary btn-small">+ Pièce</button>
-                    </div>
-                </div>
-
-                <div class="debit-actions">
-                    <label class="debit-check-label">
-                        <input type="checkbox" id="debit-allow-rotate" checked>
-                        Autoriser la rotation à 90°
-                    </label>
-                    <label class="debit-check-label">
-                        <input type="checkbox" id="debit-respect-grain">
-                        Sens de fil (respecter la longueur matière)
-                    </label>
-                    <button type="button" id="debit-optimize" class="btn-primary">Calculer le plan de découpe</button>
-                    <button type="button" id="debit-export-scies" class="btn-secondary">Exporter .txt (SCIES)</button>
-                </div>
-                <div id="debit-results" class="debit-results is-hidden" aria-live="polite">
-                    <div class="debit-summary planning-card">
-                        <h3 class="debit-card-title">Résultat</h3>
-                        <ul class="debit-summary-list">
-                            <li><strong>Panneaux utilisés :</strong> <span id="debit-sum-sheets">—</span></li>
-                            <li><strong>Surface panneaux :</strong> <span id="debit-sum-sheets-area">—</span> m²</li>
-                            <li><strong>Surface pièces :</strong> <span id="debit-sum-pieces-area">—</span> m²</li>
-                            <li><strong>Chutes (perte) :</strong> <span id="debit-sum-waste">—</span> m² (<span id="debit-sum-waste-pct">—</span>%)</li>
-                        </ul>
-                        <p id="debit-result-warning" class="edit-feedback is-hidden"></p>
-                    </div>
-                    <div id="debit-canvas-host" class="debit-canvas-host"></div>
-                </div>
-                <div id="debit-canvas-modal" class="modal" style="display:none;">
-                    <div class="modal-content" style="max-width:95vw;max-height:95vh;overflow:auto;">
-                        <div class="modal-header">
-                            <h2 id="debit-canvas-modal-title">Aperçu découpe</h2>
-                            <span id="debit-canvas-modal-close" class="close">&times;</span>
-                        </div>
-                        <div id="debit-canvas-modal-body" style="padding:8px;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="remontee-prod-view" class="view">
-                <div class="section-header">
-                    <h2>Remontée de prod</h2>
-                </div>
-                <div class="planning-card">
-                    <div class="remontee-tabs" role="tablist" aria-label="Type de demande remontée">
-                        <button type="button" class="remontee-tab is-active" data-remontee-tab="modification">Demande de modification</button>
-                        <button type="button" class="remontee-tab" data-remontee-tab="creation">Demande de création</button>
-                    </div>
-
-                    <div class="remontee-tab-panel is-active" data-remontee-panel="modification">
-                    <form id="remontee-prod-form" class="edit-form">
-                        <div class="form-group">
-                            <label for="remontee-reference">Recherche plan (ensembles + composants)</label>
-                            <input type="text" id="remontee-reference" list="remontee-reference-list" placeholder="Ex: 1234567-0000" required>
-                            <datalist id="remontee-reference-list"></datalist>
-                            <small>Commencez à taper pour rechercher parmi tous les plans existants.</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="remontee-dessinateur">Dessinateur concerné</label>
-                            <select id="remontee-dessinateur" required>
-                                <option value="">-- Sélectionner un dessinateur --</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="remontee-description">Description</label>
-                            <textarea id="remontee-description" rows="3" placeholder="Décrivez le problème ou l'ajustement demandé..."></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="remontee-photo">Photo (largement recommandé)</label>
-                            <input type="file" id="remontee-photo" accept="image/png,image/jpeg,image/webp">
-                            <div id="remontee-photo-preview" class="bulk-email-hint" style="display:none;"></div>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="btn-primary">Ajouter la remontée</button>
-                            <button type="button" id="remontee-refresh" class="btn-secondary">Actualiser</button>
-                        </div>
-                        <div id="remontee-feedback" class="edit-feedback"></div>
-                    </form>
-                    <div class="table-container" style="margin-top: 1rem;">
-                        <table class="projects-table">
-                            <thead>
-                                <tr>
-                                    <th>Référence</th>
-                                    <th>Désignation</th>
-                                    <th>Dessinateur concerné</th>
-                                    <th>Description</th>
-                                    <th>Photo</th>
-                                    <th>État</th>
-                                    <th>Date ajout</th>
-                                    <th>Ajouté par</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="remontee-prod-body"></tbody>
-                        </table>
-                    </div>
-                    </div>
-
-                    <div class="remontee-tab-panel" data-remontee-panel="creation">
-                    <h3 style="margin-bottom: 0.75rem;">Demande de création d'article (sans référence)</h3>
-                    <form id="article-request-form" class="edit-form">
-                        <div class="form-group">
-                            <label for="article-request-designation">Désignation *</label>
-                            <input type="text" id="article-request-designation" placeholder="Nom de la pièce à créer" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="article-request-client">Client *</label>
-                            <input type="text" id="article-request-client" list="article-request-client-list" placeholder="Client concerné" required>
-                            <div class="form-inline-row form-inline-row-below">
-                                <button type="button" id="article-request-client-add" class="btn-secondary">+ Ajouter client</button>
-                            </div>
-                            <datalist id="article-request-client-list"></datalist>
-                        </div>
-                        <div class="form-group">
-                            <label for="article-request-dessinateur">Dessinateur concerné *</label>
-                            <select id="article-request-dessinateur" required>
-                                <option value="">-- Sélectionner un dessinateur --</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="article-request-description">Détails (optionnel)</label>
-                            <textarea id="article-request-description" rows="3" placeholder="Contexte atelier, contraintes, dimensions..."></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="article-request-croquis">Croquis (largement recommandé)</label>
-                            <input type="file" id="article-request-croquis" accept="image/png,image/jpeg,image/webp">
-                            <div id="article-request-croquis-preview" class="bulk-email-hint" style="display:none;"></div>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="btn-primary">Ajouter la demande</button>
-                            <button type="button" id="article-request-refresh" class="btn-secondary">Actualiser</button>
-                        </div>
-                        <div id="article-request-feedback" class="edit-feedback"></div>
-                    </form>
-                    <div class="table-container" style="margin-top: 1rem;">
-                        <table class="projects-table" id="article-request-table">
-                            <thead>
-                                <tr>
-                                    <th>Désignation</th>
-                                    <th>Client</th>
-                                    <th>Dessinateur</th>
-                                    <th>Croquis</th>
-                                    <th>Statut</th>
-                                    <th>Référence créée</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="article-request-body"></tbody>
-                        </table>
-                    </div>
-                    </div>
-                </div>
-            </div>
-            </div>
-        </main>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Espace travail</div>
+    <div class="nav-item active" onclick="go('dashboard')"><i class="ti ti-layout-dashboard"></i>Tableau de bord</div>
+    <div class="nav-item" onclick="go('projects')"><i class="ti ti-folder"></i>Projets</div>
+    <div class="nav-item" onclick="go('clients')"><i class="ti ti-users"></i>Clients</div>
+    <div class="nav-item" onclick="go('nesting')"><i class="ti ti-puzzle"></i>Imbrication</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Catalogue</div>
+    <div class="nav-item" onclick="go('materials')"><i class="ti ti-box"></i>Matières</div>
+    <div class="nav-item" onclick="go('machines')"><i class="ti ti-tool"></i>Machines</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Gestion</div>
+    <div class="nav-item" onclick="go('quotes')"><i class="ti ti-receipt"></i>Devis</div>
+    <div class="nav-item" onclick="go('settings')"><i class="ti ti-settings"></i>Paramètres</div>
+  </div>
+  <div class="nav-bottom">
+    <div class="nav-conn">
+      <div class="dot pulse" id="api-dot"></div>
+      <span id="api-label" style="flex:1">Connexion…</span>
     </div>
+    <div class="nav-conn" style="margin-top:6px">
+      <div class="dot ok"></div>
+      <span style="flex:1;font-size:11px;color:var(--text3)">Supabase connecté</span>
+    </div>
+  </div>
+</nav>
 
-    <!-- Modal détail plan supprimé (snapshot JSON) -->
-    <div id="deleted-plan-detail-modal" class="modal">
-        <div class="modal-content pdf-modal-content" style="max-width:720px;">
-            <span class="close-modal deleted-plan-detail-close">&times;</span>
-            <h2 id="deleted-plan-detail-title">Détail archive</h2>
-            <div class="modal-body" id="deleted-plan-detail-body" style="max-height:70vh;overflow:auto;font-size:0.9rem;white-space:pre-wrap;word-break:break-word;"></div>
+<!-- MAIN -->
+<div id="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="page-title">Tableau de bord</div>
+      <div class="topbar-sub" id="page-sub">MB Draft — Bureau d'études</div>
+    </div>
+    <div style="display:flex;gap:8px" id="topbar-actions">
+      <button class="btn btn-accent" onclick="go('projects')"><i class="ti ti-plus"></i>Nouveau projet</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page active">
+    <div class="api-banner" id="api-banner">
+      <i class="ti ti-wifi-off"></i>
+      API MB Works non joignable — vérifie la clé dans Paramètres
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Projets actifs</div><div class="metric-value" id="m-proj">—</div></div>
+      <div class="metric"><div class="metric-label">Clients</div><div class="metric-value" id="m-clients">—</div></div>
+      <div class="metric"><div class="metric-label">Devis en cours</div><div class="metric-value" id="m-quotes">—</div></div>
+      <div class="metric"><div class="metric-label">Matières catalogue</div><div class="metric-value" id="m-mat">—</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head">Projets récents <button class="btn btn-sm" onclick="go('projects')">Voir tout</button></div>
+        <table><thead><tr><th>Nom</th><th>Client</th><th>Mode</th><th>Statut</th></tr></thead>
+        <tbody id="dash-projects"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text3)">Chargement…</td></tr></tbody></table>
+      </div>
+      <div class="card">
+        <div class="card-head">Activité</div>
+        <div class="card-body" id="dash-activity" style="font-size:13px;color:var(--text2)">
+          <div style="padding:8px 0;border-bottom:1px solid var(--border)"><b style="color:var(--text)">Projet Meuble TV</b> — Imbrication générée <span style="color:var(--text3);font-size:11px">il y a 2h</span></div>
+          <div style="padding:8px 0;border-bottom:1px solid var(--border)"><b style="color:var(--text)">Cuisine Dupont</b> — DXF importé <span style="color:var(--text3);font-size:11px">hier</span></div>
+          <div style="padding:8px 0;border-bottom:1px solid var(--border)"><b style="color:var(--text)">Bibliothèque</b> — Devis envoyé <span style="color:var(--text3);font-size:11px">lundi</span></div>
+          <div style="padding:8px 0"><b style="color:var(--text)">Panneaux bureau</b> — Projet créé <span style="color:var(--text3);font-size:11px">il y a 3j</span></div>
         </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Modal for Details -->
-    <div id="project-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 id="modal-title">Détails du Projet</h2>
-            <div class="modal-body" id="modal-body">
-                <!-- Details injected here -->
+  <!-- PROJECTS -->
+  <div id="page-projects" class="page">
+    <div class="page-header">
+      <div><div class="topbar-title">Projets</div><div class="topbar-sub">Tous les projets MB Draft</div></div>
+      <button class="btn btn-accent" onclick="openModal('modal-project')"><i class="ti ti-plus"></i>Nouveau projet</button>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>Réf.</th><th>Nom</th><th>Client</th><th>Mode</th><th>Statut</th><th>Date</th><th></th></tr></thead>
+      <tbody id="projects-tbody"><tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3)">Chargement…</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- CLIENTS -->
+  <div id="page-clients" class="page">
+    <div class="page-header">
+      <div><div class="topbar-title">Clients</div><div class="topbar-sub">Carnet d'adresses</div></div>
+      <button class="btn btn-accent" onclick="openModal('modal-client')"><i class="ti ti-plus"></i>Nouveau client</button>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>Entreprise</th><th>Contact</th><th>Email</th><th>Projets</th><th>Portail</th></tr></thead>
+      <tbody id="clients-tbody"><tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text3)">Chargement…</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- NESTING -->
+  <div id="page-nesting" class="page">
+    <div class="page-header">
+      <div><div class="topbar-title">Module d'imbrication</div><div class="topbar-sub">Optimisation matière</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="importDXF()"><i class="ti ti-upload"></i>Import DXF</button>
+        <button class="btn btn-accent" id="btn-nest" onclick="runNesting()"><i class="ti ti-puzzle"></i>Lancer</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:300px 1fr;gap:16px">
+      <!-- Config -->
+      <div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-head">Panneau source</div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+            <div class="form-group">
+              <label class="form-label">Format</label>
+              <select id="panel-preset" onchange="applyPreset()">
+                <option value="2800x2070">MDF std — 2800×2070 mm</option>
+                <option value="2440x1220">Contreplaqué — 2440×1220 mm</option>
+                <option value="2500x1250">OSB — 2500×1250 mm</option>
+                <option value="custom">Personnalisé…</option>
+              </select>
             </div>
-        </div>
-    </div>
-
-    <!-- Modal for PDFs -->
-    <div id="pdf-modal" class="modal">
-        <div class="modal-content pdf-modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 id="pdf-modal-title">PDFs disponibles</h2>
-            <div class="pdf-modal-body" id="pdf-modal-body">
-                <div class="loading">Chargement des PDFs...</div>
+            <div id="custom-dims" style="display:none;gap:6px;align-items:center" class="form-group">
+              <label class="form-label">Dimensions (mm)</label>
+              <div style="display:flex;gap:6px;align-items:center">
+                <input type="number" id="pw" value="2800" class="piece-inp" style="width:70px">
+                <span style="color:var(--text3)">×</span>
+                <input type="number" id="ph" value="2070" class="piece-inp" style="width:70px">
+              </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Modal idee d'evolution -->
-    <div id="idea-modal" class="modal">
-        <div class="modal-content pdf-modal-content">
-            <span class="close-modal idea-close">&times;</span>
-            <h2>Signaler une idee ou un bug</h2>
-            <form id="idea-form" class="edit-form">
-                <div class="form-group">
-                    <label for="idea-kind">Type de demande</label>
-                    <select id="idea-kind" required>
-                        <option value="idea" selected>Idee d'amelioration</option>
-                        <option value="bug">Signaler un bug</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="idea-title">Titre</label>
-                    <input type="text" id="idea-title" maxlength="140" placeholder="Ex: Ajouter un filtre par projet favori" required>
-                </div>
-                <div class="form-group">
-                    <label for="idea-description">Description</label>
-                    <textarea id="idea-description" rows="5" maxlength="3000" placeholder="Expliquez le besoin, le probleme, et l'amelioration souhaitee..." required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="idea-screenshot">Capture d'ecran (optionnel, png/jpg/webp)</label>
-                    <input type="file" id="idea-screenshot" accept="image/png,image/jpeg,image/webp">
-                </div>
-                <div id="idea-screenshot-preview" class="bulk-email-hint" style="display:none;"></div>
-                <div class="form-actions">
-                    <button type="submit" class="btn-primary">Envoyer la demande</button>
-                    <button type="button" class="btn-secondary" id="idea-cancel">Annuler</button>
-                </div>
-                <div id="idea-feedback" class="edit-feedback"></div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Partager (export, OneDrive, email) -->
-    <div id="bulk-pdf-modal" class="modal">
-        <div class="modal-content pdf-modal-content">
-            <span class="close-modal bulk-pdf-close">&times;</span>
-            <h2>Partager</h2>
-            <p class="bulk-selection-hint bulk-selection-hint-top">Sélectionnez des lignes dans le tableau, puis choisissez une action ci‑dessous.</p>
-
-            <!-- Section 1 : Export vers un dossier (PC / réseau) -->
-            <section class="bulk-pdf-section bulk-pdf-section-export">
-                <h3 class="bulk-pdf-section-title"><span class="bulk-pdf-section-icon">📁</span> Exporter sur un emplacement (PC ou réseau)</h3>
-                <div class="bulk-pdf-section-body">
-                    <div class="bulk-actions-row">
-                        <label>Types de fichiers</label>
-                        <div class="bulk-pdf-options-row">
-                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-folder" value="pdf" checked> PDF</label>
-                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-folder" value="dxf" checked> DXF</label>
-                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-folder" value="dwg" checked> DWG</label>
-                        </div>
-                    </div>
-                    <div class="bulk-actions-row" id="bulk-pdf-folder-row">
-                        <label for="bulk-pdf-destination">Dossier de destination</label>
-                        <input type="text" id="bulk-pdf-destination" placeholder="\\\\serveur\\partage\\dossier ou C:\Temp\PDFs">
-                        <button id="bulk-pdf-pick-folder" class="btn-secondary">Choisir...</button>
-                    </div>
-                    <div class="bulk-pdf-options-row">
-                        <label class="bulk-checkbox"><input type="checkbox" id="bulk-pdf-subfolders" checked> Sous-dossier par plan</label>
-                        <label class="bulk-checkbox"><input type="checkbox" id="bulk-pdf-recursive" checked> Inclure sous-dossiers</label>
-                        <label class="bulk-checkbox"><input type="checkbox" id="bulk-pdf-prefix"> Préfixer par le N° plan</label>
-                        <label class="bulk-checkbox"><input type="checkbox" id="bulk-pdf-suffix-designation"> Désignation en suffixe</label>
-                    </div>
-                    <button id="bulk-export-pdfs" class="btn-primary btn-export-folder" disabled>Exporter les fichiers vers ce dossier</button>
-                </div>
-            </section>
-
-            <!-- Section 2 : Export vers OneDrive -->
-            <section class="bulk-pdf-section bulk-pdf-section-onedrive">
-                <h3 class="bulk-pdf-section-title"><span class="bulk-pdf-section-icon">☁️</span> Exporter vers OneDrive</h3>
-                <div class="bulk-pdf-section-body">
-                    <div class="bulk-actions-row">
-                        <label>Types de fichiers</label>
-                        <div class="bulk-pdf-options-row">
-                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-onedrive" value="pdf" checked> PDF</label>
-                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-onedrive" value="dxf" checked> DXF</label>
-                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-onedrive" value="dwg" checked> DWG</label>
-                        </div>
-                    </div>
-                    <div class="bulk-actions-row" id="bulk-pdf-onedrive-row">
-                        <label>Dossier OneDrive</label>
-                        <span id="bulk-pdf-onedrive-selected" class="bulk-onedrive-label">— Aucun dossier choisi</span>
-                        <button type="button" id="bulk-pdf-pick-onedrive" class="btn-secondary">Choisir un dossier OneDrive</button>
-                    </div>
-                    <div class="form-group bulk-onedrive-affix-block">
-                        <label id="bulk-onedrive-affix-label">Nom du sous-dossier par plan (OneDrive)</label>
-                        <p class="bulk-pdf-options-note bulk-onedrive-affix-hint">Une ou plusieurs étapes (préfixe ou suffixe) sur le <strong>nom du dossier</strong> créé pour chaque plan, pas sur les fichiers. Ex. plan <code>1234</code> + deux suffixes → dossier <code>1234_a_b</code>. Nécessite « Sous-dossier par plan » coché.</p>
-                        <div id="bulk-onedrive-affix-rows" class="bulk-onedrive-affix-rows" role="list" aria-labelledby="bulk-onedrive-affix-label"></div>
-                        <button type="button" id="bulk-onedrive-affix-add" class="btn-secondary btn-small">Ajouter un préfixe ou suffixe</button>
-                    </div>
-                    <p class="bulk-pdf-options-note">Les fichiers conservent leur nom d’origine ; les étapes ci-dessus ne modifient que le dossier du plan.</p>
-                    <button id="bulk-export-pdfs-onedrive" class="btn-primary btn-export-onedrive" disabled>Exporter les fichiers vers OneDrive</button>
-                    <div id="bulk-onedrive-share-link" class="bulk-email-hint" style="display:none; margin-top:0.6rem;"></div>
-                </div>
-            </section>
-
-            <!-- Section SharePoint / Business Central -->
-            <section class="bulk-pdf-section bulk-pdf-section-sharepoint-bc">
-                <h3 class="bulk-pdf-section-title"><span class="bulk-pdf-section-icon">📤</span> SharePoint + Business Central</h3>
-                <div class="bulk-pdf-section-body">
-                    <p class="bulk-pdf-options-note">Export vers la bibliothèque du site SharePoint configuré (<code>SHAREPOINT_SITE_URL</code>), puis mise à jour du champ lien sur l’article BC (PDF + DXF par défaut). Utilisez le même emplacement que le site Bureau d’études SolidWorks.</p>
-                    <div class="bulk-actions-row">
-                        <label>Types de fichiers</label>
-                        <div class="bulk-pdf-options-row">
-                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-sharepoint-bc" value="pdf" checked> PDF</label>
-                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-sharepoint-bc" value="dxf" checked> DXF</label>
-                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-sharepoint-bc" value="dwg"> DWG</label>
-                        </div>
-                    </div>
-                    <div class="bulk-actions-row" id="bulk-pdf-sharepoint-row">
-                        <label>Dossier SharePoint (bibliothèque du site)</label>
-                        <span id="bulk-pdf-sharepoint-selected" class="bulk-onedrive-label">— Aucun dossier choisi</span>
-                        <button type="button" id="bulk-pdf-pick-sharepoint" class="btn-secondary">Choisir un dossier…</button>
-                    </div>
-                    <label class="bulk-checkbox" style="margin: 0.35rem 0;">
-                        <input type="checkbox" id="bulk-sharepoint-update-bc" checked> Mettre à jour le lien sur l’article dans Business Central (champ configuré : <code>BC_ITEM_LINK_FIELD</code> ou détection automatique)
-                    </label>
-                    <p class="bulk-pdf-options-note">Les <strong>préfixes / suffixes</strong> du bloc OneDrive ci-dessus s’appliquent aussi au nom du sous-dossier par plan. « Sous-dossier par plan » doit être coché pour un lien SharePoint distinct par plan dans BC.</p>
-                    <button type="button" id="bulk-export-sharepoint-bc" class="btn-primary btn-export-sharepoint-bc" disabled>Exporter vers SharePoint + BC</button>
-                    <div id="bulk-sharepoint-bc-link" class="bulk-email-hint" style="display:none; margin-top:0.6rem;"></div>
-                </div>
-            </section>
-
-            <!-- Section 3 : Envoi par email -->
-            <section class="bulk-pdf-section bulk-pdf-section-email">
-                <h3 class="bulk-pdf-section-title"><span class="bulk-pdf-section-icon">✉️</span> Envoyer par email</h3>
-                <div class="bulk-pdf-section-body bulk-email-layout">
-                    <div class="bulk-actions-row" style="grid-column: 1 / -1;">
-                        <label>Types de fichiers</label>
-                        <div class="bulk-pdf-options-row">
-                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-email" value="pdf" checked> PDF</label>
-                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-email" value="dxf" checked> DXF</label>
-                            <label class="bulk-checkbox"><input type="checkbox" name="bulk-file-types-email" value="dwg" checked> DWG</label>
-                        </div>
-                    </div>
-                    <div class="bulk-email-col bulk-email-col-recipients">
-                        <label>Destinataires — cochez les personnes à qui envoyer les fichiers</label>
-                        <input type="text" id="bulk-email-recipients-search" placeholder="Rechercher (nom ou email)..." class="bulk-email-recipients-search">
-                        <div class="bulk-email-recipients-select-actions">
-                            <button type="button" id="bulk-email-recipients-select-all" class="btn-secondary btn-small">Tout cocher</button>
-                            <button type="button" id="bulk-email-recipients-select-none" class="btn-secondary btn-small">Tout décocher</button>
-                            <span id="bulk-email-recipients-count" class="bulk-email-recipients-count">0 sélectionné(s)</span>
-                        </div>
-                        <div id="bulk-email-recipients-list" class="bulk-email-recipients-checkboxes" role="list"></div>
-                    </div>
-                    <div class="bulk-email-col bulk-email-col-form">
-                        <label for="bulk-email-subject">Objet</label>
-                        <input type="text" id="bulk-email-subject" value="" placeholder="Objet du mail (optionnel)">
-                        <label for="bulk-email-message">Message (optionnel)</label>
-                        <textarea id="bulk-email-message" rows="5" placeholder="Corps du mail (laissez vide pour le texte par défaut)"></textarea>
-                        <button id="bulk-email-pdfs" class="btn-primary" disabled>Envoyer les fichiers par email</button>
-                        <p class="bulk-email-hint">Envoi depuis votre compte Microsoft.</p>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </div>
-
-    <!-- Modal envoi email pour un PDF -->
-    <div id="single-pdf-email-modal" class="modal">
-        <div class="modal-content single-pdf-email-modal-content">
-            <span class="close-modal single-pdf-email-close">&times;</span>
-            <h2>Envoyer un PDF par email</h2>
-            <form id="single-pdf-email-form" class="edit-form">
-                <div class="form-group">
-                    <label for="single-pdf-email-file">Fichier</label>
-                    <input type="text" id="single-pdf-email-file" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="single-pdf-email-to">Destinataire(s)</label>
-                    <input type="text" id="single-pdf-email-to" placeholder="prenom.nom@postforming.eu; autre@postforming.eu" required>
-                </div>
-                <div class="form-group">
-                    <label for="single-pdf-email-subject">Objet</label>
-                    <input type="text" id="single-pdf-email-subject" placeholder="Objet du mail">
-                </div>
-                <div class="form-group">
-                    <label for="single-pdf-email-message">Message (optionnel)</label>
-                    <textarea id="single-pdf-email-message" rows="4" placeholder="Votre message..."></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn-primary">Envoyer</button>
-                    <button type="button" class="btn-secondary" id="single-pdf-email-cancel">Annuler</button>
-                </div>
-                <div id="single-pdf-email-feedback" class="edit-feedback"></div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Choisir un dossier SharePoint (site BE) -->
-    <div id="sharepoint-picker-modal" class="modal">
-        <div class="modal-content" style="max-width: 420px;">
-            <span class="close-modal sharepoint-picker-close">&times;</span>
-            <h3>Choisir un dossier SharePoint</h3>
-            <p id="sharepoint-picker-breadcrumb" class="onedrive-breadcrumb">Bibliothèque du site</p>
-            <div id="sharepoint-picker-list" class="onedrive-folder-list"></div>
-            <div class="bulk-actions-row" style="margin-top: 0.4rem;">
-                <input type="text" id="sharepoint-picker-new-folder-name" placeholder="Nom du nouveau dossier">
-                <button type="button" id="sharepoint-picker-create-folder" class="btn-secondary">Créer dossier</button>
+            <div class="form-group">
+              <label class="form-label">Kerf (mm)</label>
+              <input type="number" id="kerf" value="4" step="0.5">
             </div>
-            <div id="sharepoint-picker-feedback" class="edit-feedback" style="display: none; margin-top: 0.35rem;"></div>
-            <div class="onedrive-picker-actions">
-                <button type="button" id="sharepoint-picker-select-here" class="btn-primary">Sélectionner ce dossier</button>
-                <button type="button" id="sharepoint-picker-back" class="btn-secondary" style="display: none;">Retour</button>
+            <div class="form-group">
+              <label class="form-label">Algorithme</label>
+              <div class="toggle-g">
+                <div class="topt on" id="m-fast" onclick="setNestMode('fast')">⚡ Rapide</div>
+                <div class="topt" id="m-opt" onclick="setNestMode('optimal')">🎯 Optimal</div>
+              </div>
             </div>
+          </div>
         </div>
+        <div class="card">
+          <div class="card-head">
+            Liste de débit
+            <button class="btn btn-sm" onclick="addPiece()"><i class="ti ti-plus"></i>Pièce</button>
+          </div>
+          <div style="padding:8px;max-height:300px;overflow-y:auto" id="pieces-wrap"></div>
+        </div>
+      </div>
+      <!-- Canvas -->
+      <div class="card">
+        <div class="card-head">
+          <div style="display:flex;align-items:center;gap:10px">
+            <button class="btn btn-icon btn-sm" id="btn-prev" onclick="prevPanel()" disabled><i class="ti ti-chevron-left"></i></button>
+            <span id="panel-ind" style="font-size:12px;color:var(--text2)">Panneau 1/1</span>
+            <button class="btn btn-icon btn-sm" id="btn-next" onclick="nextPanel()" disabled><i class="ti ti-chevron-right"></i></button>
+            <span id="nest-badge" class="badge b-gray">En attente</span>
+          </div>
+          <div style="display:flex;gap:16px;font-size:12px">
+            <span>Eff. <b id="st-eff" style="color:var(--accent)">—</b></span>
+            <span>Panneaux <b id="st-pan">—</b></span>
+            <span>Chute <b id="st-waste">—</b></span>
+            <span>Pièces <b id="st-pieces">—</b></span>
+          </div>
+        </div>
+        <div style="padding:12px">
+          <div class="nest-canvas" id="nest-canvas" style="height:320px">
+            <div class="nest-placeholder" id="nest-ph">
+              <i class="ti ti-puzzle"></i>
+              <span>Lance l'imbrication pour voir le plan</span>
+            </div>
+            <svg id="nest-svg" width="100%" height="100%" style="display:none;position:absolute;inset:0"></svg>
+          </div>
+          <div id="export-btns" style="display:none;display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="exportSVG()"><i class="ti ti-file-vector"></i>SVG/DXF</button>
+            <button class="btn btn-sm" onclick="exportCSV()"><i class="ti ti-table"></i>CSV</button>
+            <button class="btn btn-sm" onclick="callAPI('/export-dxf','Génération DXF…')"><i class="ti ti-download"></i>DXF via API</button>
+          </div>
+          <div style="margin-top:10px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:3px"><span>Utilisation matière</span><span id="eff-lbl">—</span></div>
+            <div class="eff-bar"><div class="eff-fill" id="eff-fill" style="width:0"></div></div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Modal Choisir un dossier OneDrive -->
-    <div id="onedrive-picker-modal" class="modal">
-        <div class="modal-content" style="max-width: 420px;">
-            <span class="close-modal onedrive-picker-close">&times;</span>
-            <h3>Choisir un dossier OneDrive</h3>
-            <p id="onedrive-picker-breadcrumb" class="onedrive-breadcrumb">Mon OneDrive</p>
-            <div id="onedrive-picker-list" class="onedrive-folder-list"></div>
-            <div class="bulk-actions-row" style="margin-top: 0.4rem;">
-                <input type="text" id="onedrive-picker-new-folder-name" placeholder="Nom du nouveau dossier">
-                <button type="button" id="onedrive-picker-create-folder" class="btn-secondary">Créer dossier</button>
-            </div>
-            <div id="onedrive-picker-feedback" class="edit-feedback" style="display: none; margin-top: 0.35rem;"></div>
-            <div class="onedrive-picker-actions">
-                <button type="button" id="onedrive-picker-select-here" class="btn-primary">Sélectionner ce dossier</button>
-                <button type="button" id="onedrive-picker-back" class="btn-secondary" style="display: none;">Retour</button>
-            </div>
-        </div>
+  <!-- MATERIALS -->
+  <div id="page-materials" class="page">
+    <div class="page-header">
+      <div><div class="topbar-title">Catalogue matières</div><div class="topbar-sub">Panneaux disponibles</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="openModal('modal-import-csv')"><i class="ti ti-file-import"></i>Import CSV</button>
+        <button class="btn btn-accent" onclick="openModal('modal-material')"><i class="ti ti-plus"></i>Nouvelle matière</button>
+      </div>
     </div>
-
-    <!-- Modal Extraction Excel -->
-    <div id="bulk-excel-modal" class="modal">
-        <div class="modal-content pdf-modal-content">
-            <span class="close-modal bulk-excel-close">&times;</span>
-            <h2>Extraction Excel</h2>
-            <p class="bulk-selection-hint" id="bulk-excel-hint">Sélectionnez les colonnes à inclure dans le fichier.</p>
-            <div class="bulk-excel-columns">
-                <div class="bulk-excel-columns-toolbar">
-                    <button type="button" id="bulk-excel-select-all" class="btn-secondary btn-small">Tout sélectionner</button>
-                    <button type="button" id="bulk-excel-select-none" class="btn-secondary btn-small">Tout désélectionner</button>
-                </div>
-                <div id="bulk-excel-columns-list" class="bulk-excel-columns-list"></div>
-            </div>
-            <div class="bulk-excel-actions">
-                <button type="button" id="bulk-excel-download" class="btn-primary">Télécharger le fichier Excel</button>
-                <button type="button" class="btn-secondary bulk-excel-close-btn">Annuler</button>
-            </div>
-        </div>
+    <div class="card">
+      <table><thead><tr><th>Nom</th><th>Type</th><th>Dimensions</th><th>Ép.</th><th>Laser</th><th>CNC</th><th>Stock</th><th></th></tr></thead>
+      <tbody id="mat-tbody"><tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text3)">Chargement…</td></tr></tbody></table>
     </div>
+  </div>
 
-    <!-- Modal Modifier en masse -->
-    <div id="bulk-edit-modal" class="modal">
-        <div class="modal-content pdf-modal-content">
-            <span class="close-modal bulk-edit-close">&times;</span>
-            <h2>Modifier en masse</h2>
-            <p class="bulk-selection-hint">Les champs renseignés ci-dessous seront appliqués à toutes les lignes sélectionnées. La désignation reste inchangée (propre à chaque ligne).</p>
-            <div class="bulk-actions" id="bulk-edit-actions">
-                <div class="bulk-actions-row form-group">
-                    <label for="bulk-edit-etat">Nouvel état</label>
-                    <select id="bulk-edit-etat">
-                        <option value="">— Ne pas modifier —</option>
-                    </select>
-                </div>
-                <div class="bulk-actions-row form-group">
-                    <label for="bulk-edit-client">Assigner au client</label>
-                    <select id="bulk-edit-client">
-                        <option value="">— Ne pas modifier —</option>
-                    </select>
-                </div>
-                <div class="bulk-actions-row form-group">
-                    <label for="bulk-edit-demandeur">Assigner au demandeur</label>
-                    <select id="bulk-edit-demandeur">
-                        <option value="">— Ne pas modifier —</option>
-                    </select>
-                </div>
-                <div class="bulk-actions-row form-group">
-                    <label for="bulk-edit-dessinateur">Assigner au dessinateur</label>
-                    <select id="bulk-edit-dessinateur">
-                        <option value="">— Ne pas modifier —</option>
-                    </select>
-                </div>
-                <div class="bulk-actions-row">
-                    <button id="bulk-edit-apply" class="btn-primary">Appliquer les modifications</button>
-                    <span id="bulk-edit-feedback" class="edit-feedback" style="margin-left: 0.5rem;"></span>
-                </div>
+  <!-- MACHINES -->
+  <div id="page-machines" class="page">
+    <div class="page-header">
+      <div><div class="topbar-title">Profils machines</div><div class="topbar-sub">Paramètres par machine client</div></div>
+      <button class="btn btn-accent" onclick="openModal('modal-machine')"><i class="ti ti-plus"></i>Nouveau profil</button>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>Nom</th><th>Client</th><th>Type</th><th>Format max</th><th>Kerf/Fraise</th><th>Export</th><th></th></tr></thead>
+      <tbody id="mach-tbody"><tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3)">Chargement…</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- QUOTES -->
+  <div id="page-quotes" class="page">
+    <div class="page-header">
+      <div><div class="topbar-title">Devis</div><div class="topbar-sub">Suivi commercial</div></div>
+      <button class="btn btn-accent" onclick="openModal('modal-quote')"><i class="ti ti-plus"></i>Nouveau devis</button>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>Réf.</th><th>Client</th><th>Projet</th><th>Montant HT</th><th>Statut</th><th>Date</th><th></th></tr></thead>
+      <tbody id="quotes-tbody">
+        <tr><td class="mono">DEV-2025-001</td><td>Atelier Girard</td><td>Meuble TV</td><td class="mono">1 250 €</td><td><span class="badge b-amber">En attente</span></td><td style="color:var(--text3);font-size:12px">10 juin 2025</td><td><button class="btn btn-sm"><i class="ti ti-download"></i>PDF</button></td></tr>
+        <tr><td class="mono">DEV-2025-002</td><td>Menuiserie Martin</td><td>Cuisine</td><td class="mono">3 800 €</td><td><span class="badge b-green">Accepté</span></td><td style="color:var(--text3);font-size:12px">2 juin 2025</td><td><button class="btn btn-sm"><i class="ti ti-download"></i>PDF</button></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="page-settings" class="page">
+    <div class="page-header">
+      <div><div class="topbar-title">Paramètres</div><div class="topbar-sub">Connexions & configuration</div></div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab active" onclick="showTab('t-api')">API MB Works</div>
+      <div class="tab" onclick="showTab('t-supa')">Supabase</div>
+      <div class="tab" onclick="showTab('t-team')">Équipe</div>
+    </div>
+    <div id="t-api">
+      <div class="card">
+        <div class="card-head">Connexion API MB Works</div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:0">
+          <div class="settings-row">
+            <label>URL de l'API</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="settings-val" id="disp-url">—</span>
+              <button class="btn btn-sm" onclick="editApiUrl()"><i class="ti ti-edit"></i>Modifier</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Modal planning dessinateur -->
-    <div id="planning-dessinateur-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal planning-close">&times;</span>
-            <h2 id="planning-modal-title">Ajouter un dessinateur</h2>
-            <form id="planning-dessinateur-form" class="edit-form">
-                <input type="hidden" id="planning-dessinateur-id">
-                <div class="form-group">
-                    <label for="planning-dessinateur-nom">Dessinateur</label>
-                    <select id="planning-dessinateur-nom" required></select>
-                </div>
-
-                <div class="form-group">
-                    <label>Horaires</label>
-                    <div class="planning-horaires-grid">
-                        <div>
-                            <label for="planning-lundi-debut">Lundi</label>
-                            <div class="planning-horaire-row">
-                                <input type="time" id="planning-lundi-debut" aria-label="Lundi début">
-                                <input type="time" id="planning-lundi-midi-debut" aria-label="Lundi début midi">
-                                <input type="time" id="planning-lundi-midi-fin" aria-label="Lundi fin midi">
-                                <input type="time" id="planning-lundi-fin" aria-label="Lundi fin">
-                            </div>
-                        </div>
-                        <div>
-                            <label for="planning-mardi-debut">Mardi</label>
-                            <div class="planning-horaire-row">
-                                <input type="time" id="planning-mardi-debut" aria-label="Mardi début">
-                                <input type="time" id="planning-mardi-midi-debut" aria-label="Mardi début midi">
-                                <input type="time" id="planning-mardi-midi-fin" aria-label="Mardi fin midi">
-                                <input type="time" id="planning-mardi-fin" aria-label="Mardi fin">
-                            </div>
-                        </div>
-                        <div>
-                            <label for="planning-mercredi-debut">Mercredi</label>
-                            <div class="planning-horaire-row">
-                                <input type="time" id="planning-mercredi-debut" aria-label="Mercredi début">
-                                <input type="time" id="planning-mercredi-midi-debut" aria-label="Mercredi début midi">
-                                <input type="time" id="planning-mercredi-midi-fin" aria-label="Mercredi fin midi">
-                                <input type="time" id="planning-mercredi-fin" aria-label="Mercredi fin">
-                            </div>
-                        </div>
-                        <div>
-                            <label for="planning-jeudi-debut">Jeudi</label>
-                            <div class="planning-horaire-row">
-                                <input type="time" id="planning-jeudi-debut" aria-label="Jeudi début">
-                                <input type="time" id="planning-jeudi-midi-debut" aria-label="Jeudi début midi">
-                                <input type="time" id="planning-jeudi-midi-fin" aria-label="Jeudi fin midi">
-                                <input type="time" id="planning-jeudi-fin" aria-label="Jeudi fin">
-                            </div>
-                        </div>
-                        <div>
-                            <label for="planning-vendredi-debut">Vendredi</label>
-                            <div class="planning-horaire-row">
-                                <input type="time" id="planning-vendredi-debut" aria-label="Vendredi début">
-                                <input type="time" id="planning-vendredi-midi-debut" aria-label="Vendredi début midi">
-                                <input type="time" id="planning-vendredi-midi-fin" aria-label="Vendredi fin midi">
-                                <input type="time" id="planning-vendredi-fin" aria-label="Vendredi fin">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Congés</label>
-                    <div id="planning-conges-list"></div>
-                    <button type="button" id="btn-add-conge" class="btn-secondary">+ Ajouter un congé</button>
-                </div>
-
-                <div class="form-group">
-                    <label>Absences</label>
-                    <div id="planning-absences-list"></div>
-                    <button type="button" id="btn-add-absence" class="btn-secondary">+ Ajouter une absence</button>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-primary">Enregistrer</button>
-                    <button type="button" class="btn-secondary planning-close">Annuler</button>
-                </div>
-                <div id="planning-feedback" class="edit-feedback"></div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de sélection des valeurs de colonne -->
-    <div id="column-values-modal" class="modal">
-        <div class="modal-content" style="max-width: 520px;">
-            <span class="close-modal column-values-close">&times;</span>
-            <h2 id="column-values-title">Sélectionner des valeurs</h2>
-            <div style="margin-bottom: 1rem;">
-                <input type="text" id="column-values-search" placeholder="Rechercher une valeur..." style="width: 100%;">
+          </div>
+          <div class="settings-row">
+            <label>Clé secrète (X-API-Key)</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="settings-val">••••••••••••••</span>
+              <button class="btn btn-sm" onclick="editApiKey()"><i class="ti ti-edit"></i>Modifier</button>
             </div>
-            <div class="etat-filter-body" id="column-values-body">
-                <!-- Valeurs chargées dynamiquement -->
-            </div>
-            <div class="form-actions" style="margin-top: 1rem;">
-                <button type="button" class="btn-primary" id="column-values-apply">Appliquer</button>
-                <button type="button" class="btn-secondary" id="column-values-clear">Tout effacer</button>
-                <button type="button" class="btn-secondary column-values-close">Annuler</button>
-            </div>
+          </div>
+          <div class="settings-row">
+            <label>Statut</label>
+            <span id="api-status-label" style="font-size:12px;color:var(--text3)">Non testé</span>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:8px">
+            <button class="btn btn-accent" onclick="testAPI()"><i class="ti ti-plug"></i>Tester la connexion</button>
+          </div>
         </div>
+      </div>
     </div>
-
-    <!-- Modal d'ajout -->
-    <div id="add-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal add-close">&times;</span>
-            <h2 id="add-modal-title">Ajouter un nouveau projet</h2>
-            <form id="add-form" class="edit-form">
-                <div class="form-group">
-                    <label for="add-plan-type">Type de plan <span style="color: var(--danger);">*</span></label>
-                    <select id="add-plan-type" required>
-                        <option value="">-- Choisir un type --</option>
-                        <option value="ensemble">Ensemble</option>
-                        <option value="composant">Composant</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="add-planNumber">N° Plan (auto) <span style="color: var(--danger);">*</span></label>
-                    <input type="text" id="add-planNumber" name="N°Plan" required readonly placeholder="Sélectionnez un type">
-                </div>
-                <div class="form-group">
-                    <label for="add-designation">Désignation <span style="color: var(--danger);">*</span></label>
-                    <input type="text" id="add-designation" name="designation" required>
-                </div>
-                <div class="form-group">
-                    <label for="add-longueur">Dimensions (L × P × H)</label>
-                    <div class="inline-field">
-                        <input type="number" id="add-longueur" name="longueur" placeholder="Longueur" step="1" min="0">
-                        <input type="number" id="add-profondeur" name="profondeur" placeholder="Profondeur" step="1" min="0">
-                        <input type="number" id="add-hauteur" name="hauteur" placeholder="Hauteur" step="1" min="0">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="add-client">Client</label>
-                    <div class="inline-field">
-                        <select id="add-client" name="Client">
-                            <option value="">-- Sélectionner un client --</option>
-                        </select>
-                        <button type="button" id="btn-add-client-inline" class="btn-secondary">+ Ajouter</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="add-ville">Ville</label>
-                    <input type="text" id="add-ville" name="Ville">
-                </div>
-                <div class="form-group">
-                    <label for="add-finition">Finition</label>
-                    <input type="text" id="add-finition" name="finition">
-                </div>
-                <div class="form-group">
-                    <label for="add-date-livraison">Date livraison</label>
-                    <input type="date" id="add-date-livraison" name="date_livraison">
-                </div>
-                <div class="form-group admin-only-block">
-                    <label for="add-temps-dev">Temps dev (h)</label>
-                    <input type="number" id="add-temps-dev" name="temps_dev" min="0" step="0.25" placeholder="0">
-                </div>
-                <div class="form-group">
-                    <label for="add-dessinateur">Dessinateur</label>
-                    <select id="add-dessinateur" name="dessinateur">
-                        <option value="">-- Sélectionner un dessinateur --</option>
-                    </select>
-                </div>
-                <div class="form-group only-ensemble">
-                    <label for="add-demandeur">Demandeur</label>
-                    <div class="inline-field">
-                        <select id="add-demandeur" name="demandeur">
-                            <option value="">-- Sélectionner un demandeur --</option>
-                        </select>
-                        <button type="button" id="btn-add-demandeur-inline" class="btn-secondary">+ Ajouter</button>
-                    </div>
-                </div>
-                <div class="form-group only-ensemble">
-                    <label for="add-cdc">Chemin CDC (serveur fichiers)</label>
-                    <div class="inline-field">
-                        <input type="text" id="add-cdc" name="CDC" placeholder="\\\\POST-FIC\\plans\\...">
-                        <button type="button" id="btn-add-cdc-pick" class="btn-secondary">Parcourir serveur</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="add-create-folders" name="create_folders" checked>
-                        Créer les dossiers sur le serveur
-                    </label>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn-primary">Ajouter</button>
-                    <button type="button" class="btn-secondary" id="cancel-add">Annuler</button>
-                </div>
-                <div id="add-feedback" class="edit-feedback"></div>
-            </form>
+    <div id="t-supa" style="display:none">
+      <div class="card">
+        <div class="card-head">Connexion Supabase</div>
+        <div class="card-body">
+          <div class="settings-row"><label>URL projet</label><span class="settings-val">https://xqglkmyedoulwzoz…</span></div>
+          <div class="settings-row"><label>Clé anon</label><span class="settings-val">sb_publishable_••••</span></div>
+          <div class="settings-row"><label>Statut</label><span style="font-size:12px;color:var(--accent)">✓ Connecté</span></div>
         </div>
+      </div>
     </div>
-
-    <!-- Modal d'édition -->
-    <div id="edit-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal edit-close">&times;</span>
-            <h2 id="edit-modal-title">Modifier le projet</h2>
-            <form id="edit-form" class="edit-form">
-                <input type="hidden" id="edit-planNumber">
-                <div class="form-group">
-                    <label for="edit-designation">Désignation</label>
-                    <input type="text" id="edit-designation" name="designation" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit-longueur">Dimensions (L × P × H)</label>
-                    <div class="inline-field">
-                        <input type="number" id="edit-longueur" name="longueur" placeholder="Longueur" step="1" min="0">
-                        <input type="number" id="edit-profondeur" name="profondeur" placeholder="Profondeur" step="1" min="0">
-                        <input type="number" id="edit-hauteur" name="hauteur" placeholder="Hauteur" step="1" min="0">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="edit-client">Client</label>
-                    <div class="inline-field">
-                        <select id="edit-client" name="Client">
-                            <option value="">-- Sélectionner un client --</option>
-                        </select>
-                        <button type="button" id="btn-add-client-inline-edit" class="btn-secondary">+ Ajouter</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="edit-chantier">Chantier</label>
-                    <input type="text" id="edit-chantier" name="chantier">
-                </div>
-                <div class="form-group">
-                    <label for="edit-ville">Ville</label>
-                    <input type="text" id="edit-ville" name="Ville">
-                </div>
-                <div class="form-group">
-                    <label for="edit-finition">Finition</label>
-                    <input type="text" id="edit-finition" name="finition">
-                </div>
-                <div class="form-group">
-                    <label for="edit-date-livraison">Date livraison</label>
-                    <input type="date" id="edit-date-livraison" name="date_livraison">
-                </div>
-                <div class="form-group only-ensemble admin-only-block">
-                    <label for="edit-temps-dev">Temps dev (h)</label>
-                    <input type="number" id="edit-temps-dev" name="temps_dev" min="0" step="0.25" placeholder="0">
-                </div>
-                <div class="form-group">
-                    <label for="edit-etat">État</label>
-                    <select id="edit-etat" name="etat">
-                        <option value="">-- Sélectionner un état --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="edit-dessinateur">Dessinateur</label>
-                    <select id="edit-dessinateur" name="dessinateur">
-                        <option value="">-- Sélectionner un dessinateur --</option>
-                    </select>
-                </div>
-                <div class="form-group only-ensemble">
-                    <label for="edit-demandeur">Demandeur</label>
-                    <select id="edit-demandeur" name="demandeur">
-                        <option value="">-- Sélectionner un demandeur --</option>
-                    </select>
-                </div>
-                <div class="form-group only-ensemble">
-                    <label for="edit-cdc">Chemin CDC (serveur fichiers)</label>
-                    <div class="inline-field">
-                        <input type="text" id="edit-cdc" name="CDC" placeholder="\\\\POST-FIC\\plans\\...">
-                        <button type="button" id="btn-edit-cdc-pick" class="btn-secondary">Parcourir serveur</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="edit-commentaire">Commentaire</label>
-                    <textarea id="edit-commentaire" name="commentaire" rows="3" placeholder="Commentaire libre..."></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn-primary">Enregistrer</button>
-                    <button type="button" class="btn-secondary" id="cancel-edit">Annuler</button>
-                </div>
-                <div id="edit-feedback" class="edit-feedback"></div>
-            </form>
+    <div id="t-team" style="display:none">
+      <div class="card">
+        <div class="card-head">Membres de l'équipe</div>
+        <div class="card-body">
+          <table>
+            <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>MB Draft</td><td style="color:var(--text3)">admin@mbdraft.fr</td><td><span class="badge b-green">Admin</span></td><td></td></tr>
+              <tr><td>Collègue</td><td style="color:var(--text3)">—</td><td><span class="badge b-gray">Ingénieur</span></td><td><button class="btn btn-sm">Inviter</button></td></tr>
+            </tbody>
+          </table>
+          <button class="btn btn-accent" style="margin-top:14px"><i class="ti ti-user-plus"></i>Inviter un membre</button>
         </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <template id="bulk-onedrive-affix-row-template">
-        <div class="bulk-onedrive-affix-row" role="listitem">
-            <select class="bulk-onedrive-affix-mode" aria-label="Préfixe ou suffixe">
-                <option value="prefix">Préfixe</option>
-                <option value="suffix" selected>Suffixe</option>
-            </select>
-            <select class="bulk-onedrive-affix-column" aria-label="Colonne">
-                <option value="">— Colonne —</option>
-                <option value="N°Plan">N° Plan</option>
-                <option value="designation">Désignation</option>
-                <option value="Client">Client</option>
-                <option value="chantier">Chantier</option>
-                <option value="Ville">Ville</option>
-                <option value="finition">Finition</option>
-                <option value="dessinateur">Dessinateur</option>
-                <option value="demandeur">Demandeur</option>
-                <option value="etat">État</option>
-            </select>
-            <button type="button" class="btn-secondary btn-small bulk-onedrive-affix-remove" title="Retirer cette étape">Retirer</button>
+<!-- MODAL PROJECT -->
+<div id="modal-project" class="modal-bg" style="display:none" onclick="if(event.target===this)closeModal('modal-project')">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">Nouveau projet</span><button class="btn btn-icon" onclick="closeModal('modal-project')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">Nom du projet</label><input type="text" id="p-name" placeholder="Ex. Cuisine Dupont"></div>
+        <div class="form-group"><label class="form-label">Mode de découpe</label>
+          <div class="toggle-g" style="margin-top:2px">
+            <div class="topt on" id="pm-laser" onclick="setProjMode('laser')"><i class="ti ti-scan" style="font-size:13px"></i> Laser</div>
+            <div class="topt" id="pm-cnc" onclick="setProjMode('cnc')"><i class="ti ti-cpu" style="font-size:13px"></i> CNC</div>
+          </div>
         </div>
-    </template>
-
-    <script src="status.js?v=1"></script>
-    <script src="planning.js?v=1"></script>
-    <script src="debit_panneaux.js?v=3"></script>
-    <script src="app.js?v=17"></script>
-
-    <!-- ===== Modale Cas d'emploi Business Central ===== -->
-    <div id="bc-usage-modal" class="bc-usage-modal" role="dialog" aria-modal="true" aria-labelledby="bc-usage-modal-label">
-        <div class="bc-usage-modal-overlay" id="bc-usage-modal-overlay"></div>
-        <div class="bc-usage-modal-card">
-            <div class="bc-usage-modal-header">
-                <span class="bc-usage-modal-icon" aria-hidden="true">📘</span>
-                <h2 class="bc-usage-modal-title" id="bc-usage-modal-label">Cas d'emploi BC</h2>
-                <button class="bc-usage-modal-close" id="bc-usage-modal-close" aria-label="Fermer">✕</button>
-            </div>
-            <div class="bc-usage-modal-body"></div>
+        <div class="form-group"><label class="form-label">Statut</label>
+          <select id="p-status"><option value="draft">Brouillon</option><option value="in_progress">En cours</option><option value="nesting">Imbrication</option><option value="quote">Devis</option></select>
         </div>
+        <div class="form-group full"><label class="form-label">Description</label><textarea id="p-desc" rows="2" placeholder="Notes, contexte…"></textarea></div>
+      </div>
     </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-project')">Annuler</button>
+      <button class="btn btn-accent" onclick="saveProject()"><i class="ti ti-check"></i>Créer</button>
+    </div>
+  </div>
+</div>
 
+<!-- MODAL CLIENT -->
+<div id="modal-client" class="modal-bg" style="display:none" onclick="if(event.target===this)closeModal('modal-client')">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">Nouveau client</span><button class="btn btn-icon" onclick="closeModal('modal-client')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">Entreprise</label><input type="text" id="c-company" placeholder="Menuiserie Martin"></div>
+        <div class="form-group"><label class="form-label">Contact</label><input type="text" id="c-contact" placeholder="Jean Martin"></div>
+        <div class="form-group"><label class="form-label">Email</label><input type="email" id="c-email" placeholder="j.martin@…"></div>
+        <div class="form-group"><label class="form-label">Téléphone</label><input type="tel" id="c-phone" placeholder="06 …"></div>
+        <div class="form-group full"><label class="form-label">Notes</label><textarea id="c-notes" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-client')">Annuler</button>
+      <button class="btn btn-accent" onclick="saveClient()"><i class="ti ti-check"></i>Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MATERIAL -->
+<div id="modal-material" class="modal-bg" style="display:none" onclick="if(event.target===this)closeModal('modal-material')">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">Nouvelle matière</span><button class="btn btn-icon" onclick="closeModal('modal-material')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">Nom</label><input type="text" id="mat-name" placeholder="MDF standard 18mm"></div>
+        <div class="form-group"><label class="form-label">Type</label>
+          <select id="mat-type"><option value="MDF">MDF</option><option value="plywood">Contreplaqué</option><option value="melamine">Mélaminé</option><option value="OSB">OSB</option><option value="other">Autre</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Épaisseur (mm)</label><input type="number" id="mat-thick" value="18"></div>
+        <div class="form-group"><label class="form-label">Largeur (mm)</label><input type="number" id="mat-w" value="2800"></div>
+        <div class="form-group"><label class="form-label">Hauteur (mm)</label><input type="number" id="mat-h" value="2070"></div>
+        <div class="form-group"><label class="form-label">Laser</label><select id="mat-laser"><option value="true">Compatible</option><option value="false">Non compatible</option></select></div>
+        <div class="form-group"><label class="form-label">CNC</label><select id="mat-cnc"><option value="true">Compatible</option><option value="false">Non compatible</option></select></div>
+        <div class="form-group"><label class="form-label">Stock</label><select id="mat-stock"><option value="available">En stock</option><option value="on_order">Sur commande</option><option value="unavailable">Indisponible</option></select></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-material')">Annuler</button>
+      <button class="btn btn-accent" onclick="saveMaterial()"><i class="ti ti-check"></i>Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const SB_URL = 'https://xqglkmyedoulwzozheqt.supabase.co';
+const SB_KEY = 'sb_publishable_YiqzGzWywcfNqjeClbJzpA_vVirKwum';
+const SB_H   = {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+
+let API_URL = localStorage.getItem('mbw_api_url') || 'https://mbworks-backend-production.up.railway.app';
+let API_KEY = localStorage.getItem('mbw_api_key') || 'mbworks_2025_mb_draft_secret';
+const API_H = () => ({'Content-Type':'application/json','X-API-Key': API_KEY});
+
+// ── SUPABASE ──
+async function sb(path, opts={}) {
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/'+path, {headers:SB_H, ...opts});
+    if (!r.ok) return null;
+    return r.json();
+  } catch { return null; }
+}
+
+// ── API MB Works ──
+async function api(path, opts={}) {
+  try {
+    const r = await fetch(API_URL+path, {headers:API_H(), ...opts});
+    if (!r.ok) return null;
+    return r.json();
+  } catch { return null; }
+}
+
+// ── NAV ──
+const PAGE_META = {
+  dashboard: {title:'Tableau de bord', sub:'MB Draft — Bureau d\'études'},
+  projects:  {title:'Projets',         sub:'Tous les projets MB Draft'},
+  clients:   {title:'Clients',         sub:'Carnet d\'adresses'},
+  nesting:   {title:'Imbrication',     sub:'Optimisation matière'},
+  materials: {title:'Catalogue matières', sub:'Panneaux disponibles'},
+  machines:  {title:'Profils machines',sub:'Paramètres par machine client'},
+  quotes:    {title:'Devis',           sub:'Suivi commercial'},
+  settings:  {title:'Paramètres',      sub:'Connexions & configuration'},
+};
+function go(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  const meta = PAGE_META[page] || {};
+  document.getElementById('page-title').textContent = meta.title || page;
+  document.getElementById('page-sub').textContent   = meta.sub   || '';
+  // Activer nav item
+  document.querySelectorAll('.nav-item').forEach(n => {
+    const t = n.textContent.toLowerCase();
+    if ((page==='dashboard'&&t.includes('tableau'))||(page==='projects'&&t.includes('projet'))||
+        (page==='clients'&&t.includes('client'))||(page==='nesting'&&t.includes('imbric'))||
+        (page==='materials'&&t.includes('mati'))||(page==='machines'&&t.includes('machine'))||
+        (page==='quotes'&&t.includes('devis'))||(page==='settings'&&t.includes('param')))
+      n.classList.add('active');
+  });
+  if (page==='dashboard') loadDashboard();
+  if (page==='projects')  loadProjects();
+  if (page==='clients')   loadClients();
+  if (page==='materials') loadMaterials();
+  if (page==='machines')  loadMachines();
+  if (page==='settings')  initSettings();
+}
+
+// ── TABS SETTINGS ──
+function showTab(id) {
+  ['t-api','t-supa','t-team'].forEach(t => document.getElementById(t).style.display = t===id?'block':'none');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ── MODALS ──
+function openModal(id)  { document.getElementById(id).style.display='flex'; }
+function closeModal(id) { document.getElementById(id).style.display='none'; }
+
+// ── API CHECK ──
+async function testAPI() {
+  const dot = document.getElementById('api-dot');
+  const lbl = document.getElementById('api-label');
+  const sta = document.getElementById('api-status-label');
+  dot.className = 'dot pulse';
+  lbl.textContent = 'Test…';
+  const t0 = Date.now();
+  const res = await api('/health');
+  const ms = Date.now()-t0;
+  if (res && res.status === 'ok') {
+    dot.className = 'dot ok';
+    lbl.textContent = `API connectée (${ms}ms)`;
+    if (sta) sta.innerHTML = `<span style="color:var(--accent)">✓ Connectée — ${ms}ms</span>`;
+    document.getElementById('api-banner').classList.remove('show');
+  } else {
+    dot.className = 'dot err';
+    lbl.textContent = 'API non joignable';
+    if (sta) sta.innerHTML = `<span style="color:var(--danger)">✗ Non joignable</span>`;
+    document.getElementById('api-banner').classList.add('show');
+  }
+}
+
+function initSettings() {
+  document.getElementById('disp-url').textContent = API_URL;
+}
+function editApiUrl() {
+  const v = prompt('URL de l\'API Railway :', API_URL);
+  if (v) { API_URL = v.trim(); localStorage.setItem('mbw_api_url', API_URL); initSettings(); }
+}
+function editApiKey() {
+  const v = prompt('Clé secrète (API_SECRET_KEY) :', API_KEY);
+  if (v) { API_KEY = v.trim(); localStorage.setItem('mbw_api_key', API_KEY); }
+}
+
+// ── DASHBOARD ──
+async function loadDashboard() {
+  const [projects, clients, mats] = await Promise.all([
+    sb('projects?select=id,name,status,cutting_mode&order=created_at.desc&limit=5'),
+    sb('clients?select=id'),
+    sb('materials?select=id'),
+  ]);
+  document.getElementById('m-proj').textContent    = projects?.length ?? '—';
+  document.getElementById('m-clients').textContent = clients?.length  ?? '—';
+  document.getElementById('m-quotes').textContent  = '2';
+  document.getElementById('m-mat').textContent     = mats?.length    ?? '—';
+
+  const MODE = {laser:'<span class="badge b-blue">Laser</span>',cnc:'<span class="badge b-amber">CNC</span>',both:'<span class="badge b-gray">Les deux</span>'};
+  const STAT = {draft:'<span class="badge b-gray">Brouillon</span>',in_progress:'<span class="badge b-blue">En cours</span>',nesting:'<span class="badge b-amber">Imbrication</span>',quote:'<span class="badge b-green">Devis</span>',completed:'<span class="badge b-green">Terminé</span>'};
+  const mock = [{name:'Cuisine Dupont',client:'Menuiserie Martin',cutting_mode:'cnc',status:'in_progress'},{name:'Meuble TV',client:'Atelier Girard',cutting_mode:'laser',status:'nesting'}];
+  const rows = (projects?.length ? projects : mock).map(p =>
+    `<tr><td><b>${p.name}</b></td><td style="color:var(--text2)">${p.client||'—'}</td><td>${MODE[p.cutting_mode]||''}</td><td>${STAT[p.status]||''}</td></tr>`
+  ).join('');
+  document.getElementById('dash-projects').innerHTML = rows || '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text3)">Aucun projet</td></tr>';
+}
+
+// ── PROJECTS ──
+async function loadProjects() {
+  const data = await sb('projects?select=*&order=created_at.desc') || [];
+  const STAT = {draft:'<span class="badge b-gray">Brouillon</span>',in_progress:'<span class="badge b-blue">En cours</span>',nesting:'<span class="badge b-amber">Imbrication</span>',quote:'<span class="badge b-green">Devis</span>',completed:'<span class="badge b-green">Terminé</span>',archived:'<span class="badge b-gray">Archivé</span>'};
+  const mock = [{reference:'PRJ-2025-001',name:'Cuisine Dupont',cutting_mode:'cnc',status:'in_progress',created_at:'2025-06-10'},{reference:'PRJ-2025-002',name:'Meuble TV',cutting_mode:'laser',status:'nesting',created_at:'2025-06-12'}];
+  const rows = (data.length ? data : mock).map(p =>
+    `<tr><td class="mono" style="color:var(--text3)">${p.reference||'—'}</td><td><b>${p.name}</b></td><td style="color:var(--text2)">—</td><td>${p.cutting_mode==='laser'?'<span class="badge b-blue">Laser</span>':p.cutting_mode==='cnc'?'<span class="badge b-amber">CNC</span>':'<span class="badge b-gray">Les deux</span>'}</td><td>${STAT[p.status]||''}</td><td style="color:var(--text3);font-size:12px">${(p.created_at||'').slice(0,10)}</td><td><div class="row-actions"><button class="btn btn-sm" onclick="go('nesting')"><i class="ti ti-puzzle"></i>Imbriquer</button></div></td></tr>`
+  ).join('');
+  document.getElementById('projects-tbody').innerHTML = rows || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3)">Aucun projet — <a href="#" onclick="openModal(\'modal-project\')" style="color:var(--accent)">en créer un</a></td></tr>';
+}
+let projMode = 'laser';
+function setProjMode(m) { projMode=m; ['laser','cnc'].forEach(x=>document.getElementById('pm-'+x).classList.toggle('on',x===m)); }
+async function saveProject() {
+  const name = document.getElementById('p-name').value.trim();
+  if (!name) return alert('Indique un nom de projet.');
+  const payload = {name, cutting_mode:projMode, status:document.getElementById('p-status').value, description:document.getElementById('p-desc').value};
+  const res = await sb('projects', {method:'POST', headers:{...SB_H,'Prefer':'return=representation'}, body:JSON.stringify(payload)});
+  closeModal('modal-project');
+  loadProjects();
+  go('projects');
+}
+
+// ── CLIENTS ──
+async function loadClients() {
+  const data = await sb('clients?select=*&order=company_name') || [];
+  const mock = [{company_name:'Menuiserie Martin',contact_name:'Jean Martin',email:'j.martin@menuiserie.fr',portal_active:true},{company_name:'Atelier Girard',contact_name:'Sophie Girard',email:'s.girard@atelier.fr',portal_active:false}];
+  const rows = (data.length?data:mock).map(c =>
+    `<tr><td><b>${c.company_name}</b></td><td style="color:var(--text2)">${c.contact_name||'—'}</td><td style="color:var(--info);font-size:12px">${c.email||'—'}</td><td>—</td><td>${c.portal_active?'<span class="badge b-green">Actif</span>':'<span class="badge b-gray">Inactif</span>'}</td></tr>`
+  ).join('');
+  document.getElementById('clients-tbody').innerHTML = rows;
+}
+async function saveClient() {
+  const payload = {company_name:document.getElementById('c-company').value,contact_name:document.getElementById('c-contact').value,email:document.getElementById('c-email').value,phone:document.getElementById('c-phone').value,notes:document.getElementById('c-notes').value};
+  if (!payload.company_name) return alert('Indique un nom d\'entreprise.');
+  await sb('clients',{method:'POST',headers:{...SB_H,'Prefer':'return=representation'},body:JSON.stringify(payload)});
+  closeModal('modal-client'); loadClients();
+}
+
+// ── MATERIALS ──
+const TYPE = {MDF:'MDF',plywood:'Contreplaqué',melamine:'Mélaminé',OSB:'OSB',other:'Autre'};
+const STOCK = {available:'<span class="badge b-green">En stock</span>',on_order:'<span class="badge b-amber">Commande</span>',unavailable:'<span class="badge b-gray">Indispo</span>'};
+async function loadMaterials() {
+  const data = await sb('materials?select=*&order=name') || [];
+  const rows = data.map(m =>
+    `<tr><td><b>${m.name}</b></td><td><span class="badge b-gray">${TYPE[m.material_type]||m.material_type}</span></td><td class="mono">${m.width_mm}×${m.height_mm}</td><td class="mono">${m.thickness_mm}mm</td><td>${m.laser_compatible?'<span class="badge b-green">✓</span>':'<span class="badge b-gray">—</span>'}</td><td>${m.cnc_compatible?'<span class="badge b-green">✓</span>':'<span class="badge b-gray">—</span>'}</td><td>${STOCK[m.stock_status]||''}</td><td><div class="row-actions"><button class="btn btn-sm btn-icon" onclick="deleteMat('${m.id}')"><i class="ti ti-trash"></i></button></div></td></tr>`
+  ).join('');
+  document.getElementById('mat-tbody').innerHTML = rows || '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text3)">Aucune matière — importez un CSV ou ajoutez-en une</td></tr>';
+}
+async function saveMaterial() {
+  const payload = {name:document.getElementById('mat-name').value,material_type:document.getElementById('mat-type').value,thickness_mm:+document.getElementById('mat-thick').value,width_mm:+document.getElementById('mat-w').value,height_mm:+document.getElementById('mat-h').value,laser_compatible:document.getElementById('mat-laser').value==='true',cnc_compatible:document.getElementById('mat-cnc').value==='true',stock_status:document.getElementById('mat-stock').value};
+  if (!payload.name) return alert('Indique un nom.');
+  await sb('materials',{method:'POST',headers:{...SB_H,'Prefer':'return=representation'},body:JSON.stringify(payload)});
+  closeModal('modal-material'); loadMaterials();
+}
+async function deleteMat(id) {
+  if (!confirm('Supprimer cette matière ?')) return;
+  await sb('materials?id=eq.'+id,{method:'DELETE'});
+  loadMaterials();
+}
+
+// ── MACHINES ──
+async function loadMachines() {
+  const data = await sb('machine_profiles?select=*&order=name') || [];
+  const MTYPE = {laser_co2:'<span class="badge b-blue">Laser CO₂</span>',laser_fiber:'<span class="badge b-blue">Laser fibre</span>',cnc_wood:'<span class="badge b-amber">CNC bois</span>',other:'<span class="badge b-gray">Autre</span>'};
+  const mock = [{name:'Trotec Speedy 400',client:'Atelier Girard',machine_type:'laser_co2',max_width_mm:1016,max_height_mm:610,kerf_mm:0.15,output_format:'dxf'},{name:'Biesse Rover B',client:'Menuiserie Martin',machine_type:'cnc_wood',max_width_mm:3050,max_height_mm:1530,bit_diameter_mm:8,output_format:'dxf'}];
+  const rows = (data.length?data:mock).map(m =>
+    `<tr><td><b>${m.name}</b></td><td style="color:var(--text2)">${m.client||'—'}</td><td>${MTYPE[m.machine_type]||''}</td><td class="mono">${m.max_width_mm}×${m.max_height_mm}mm</td><td class="mono">${m.kerf_mm?'Kerf '+m.kerf_mm+'mm':m.bit_diameter_mm?'Ø'+m.bit_diameter_mm+'mm':'—'}</td><td><span class="badge b-gray">${(m.output_format||'dxf').toUpperCase()}</span></td><td><div class="row-actions"><button class="btn btn-sm">Éditer</button></div></td></tr>`
+  ).join('');
+  document.getElementById('mach-tbody').innerHTML = rows;
+}
+
+// ── NESTING ──
+let nestMode='fast', nestResult=null, panelIdx=0, pieceN=0;
+const COLORS=[['#1D9E75','#9EFCD0'],['#3B82F6','#93C5FD'],['#EF9F27','#FCD34D'],['#E24B4A','#FCA5A5'],['#8B5CF6','#C4B5FD'],['#06B6D4','#67E8F9']];
+let pieces=[
+  {id:'P1',name:'Côté G',w:720,h:580,qty:2,rot:true},
+  {id:'P2',name:'Porte', w:396,h:716,qty:6,rot:true},
+  {id:'P3',name:'Tablette',w:780,h:350,qty:4,rot:true},
+];
+function applyPreset(){const v=document.getElementById('panel-preset').value;document.getElementById('custom-dims').style.display=v==='custom'?'flex':'none';if(v!=='custom'){const[w,h]=v.split('x');document.getElementById('pw').value=w;document.getElementById('ph').value=h;}}
+function setNestMode(m){nestMode=m;document.getElementById('m-fast').classList.toggle('on',m==='fast');document.getElementById('m-opt').classList.toggle('on',m==='optimal');}
+function addPiece(){pieceN++;pieces.push({id:'P'+pieceN,name:'Pièce '+pieceN,w:400,h:300,qty:1,rot:true});renderPieces();}
+function renderPieces(){
+  document.getElementById('pieces-wrap').innerHTML=pieces.map((p,i)=>{
+    const c=COLORS[i%COLORS.length];
+    return`<div class="piece-card" style="border-left:3px solid ${c[0]}">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <input style="flex:1;font-size:12px;font-weight:500;background:transparent;border:none;color:var(--text);padding:0" value="${p.name}" onchange="pieces[${i}].name=this.value">
+        <span style="cursor:pointer;color:var(--text3);font-size:13px" onclick="pieces.splice(${i},1);renderPieces()"><i class="ti ti-x"></i></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:12px;flex-wrap:wrap">
+        <input class="piece-inp" type="number" value="${p.w}" onchange="pieces[${i}].w=+this.value" title="Largeur">
+        <span style="color:var(--text3)">×</span>
+        <input class="piece-inp" type="number" value="${p.h}" onchange="pieces[${i}].h=+this.value" title="Hauteur">
+        <span style="color:var(--text3)">mm</span>
+        <span style="color:var(--text3);margin-left:4px">×</span>
+        <input class="piece-inp" type="number" value="${p.qty}" style="width:40px" onchange="pieces[${i}].qty=+this.value" title="Qté">
+        <label style="display:flex;align-items:center;gap:3px;color:var(--text3);cursor:pointer;margin-left:4px;font-size:11px"><input type="checkbox" ${p.rot?'checked':''} onchange="pieces[${i}].rot=this.checked">↻</label>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Algorithme embarqué (fallback si API indisponible)
+function shelfNest(all, pw, ph, kerf) {
+  const sorted=[...all].sort((a,b)=>b.w*b.h-a.w*a.h);
+  const panels=[];let remaining=sorted;
+  while(remaining.length){
+    const shelves=[],placed=[],still=[];
+    const nextY=()=>shelves.length?shelves[shelves.length-1].y+shelves[shelves.length-1].h+kerf:0;
+    for(const p of remaining){
+      let ok=false;
+      for(const rot of(p.rot?[false,true]:[false])){
+        const pw2=rot?p.h:p.w,ph2=rot?p.w:p.h;
+        for(const sh of shelves){if(ph2<=sh.h&&sh.x+pw2+kerf<=pw){placed.push({...p,px:sh.x+kerf,py:sh.y+kerf,pw:pw2,ph:ph2,rot,panel:panels.length});sh.x+=pw2+kerf;ok=true;break;}}
+        if(ok)break;
+        const ny=nextY();if(ny+ph2+kerf<=ph){shelves.push({y:ny,h:ph2,x:0});const sh=shelves[shelves.length-1];placed.push({...p,px:sh.x+kerf,py:sh.y+kerf,pw:pw2,ph:ph2,rot,panel:panels.length});sh.x+=pw2+kerf;ok=true;break;}
+      }
+      if(!ok)still.push(p);
+    }
+    if(!placed.length)break;
+    panels.push({placed});
+    if(still.length===remaining.length)break;
+    remaining=still;
+  }
+  return panels;
+}
+
+async function runNesting(){
+  const btn=document.getElementById('btn-nest');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Calcul…';
+  const pw=+document.getElementById('pw').value||2800;
+  const ph=+document.getElementById('ph').value||2070;
+  const kerf=+document.getElementById('kerf').value||4;
+  const all=[];pieces.forEach((p,i)=>{for(let q=0;q<p.qty;q++)all.push({...p,colorIdx:i,qIdx:q});});
+
+  let panels=null;
+  // Essaie l'API d'abord
+  const apiPayload={pieces:pieces.map(p=>({id:p.id,name:p.name,width:p.w,height:p.h,quantity:p.qty,can_rotate:p.rot})),panel:{width:pw,height:ph},kerf,mode:nestMode};
+  const apiRes=await api('/nest',{method:'POST',body:JSON.stringify(apiPayload)});
+  
+  if(apiRes && apiRes.placed){
+    // Regroupe par panneau
+    const panelMap={};
+    apiRes.placed.forEach(p=>{
+      const pi=p.panel_index||0;
+      if(!panelMap[pi])panelMap[pi]={placed:[]};
+      const orig=pieces.find(x=>x.id===p.piece_id.split('_')[0]);
+      panelMap[pi].placed.push({...p,px:p.x,py:p.y,pw:p.width,ph:p.height,colorIdx:orig?pieces.indexOf(orig):0,name:p.piece_name,rot:p.rotated});
+    });
+    panels=Object.values(panelMap);
+    document.getElementById('nest-badge').className='badge b-green';
+    document.getElementById('nest-badge').textContent='API '+nestMode;
+    const eff=apiRes.efficiency_pct;
+    document.getElementById('st-eff').textContent=eff+'%';
+    document.getElementById('st-pan').textContent=apiRes.panels_used;
+    document.getElementById('st-waste').textContent=apiRes.waste_pct+'%';
+    document.getElementById('st-pieces').textContent=apiRes.placed.length;
+    document.getElementById('eff-fill').style.width=eff+'%';
+    document.getElementById('eff-lbl').textContent=eff+'%';
+  } else {
+    // Fallback local
+    await new Promise(r=>setTimeout(r,nestMode==='fast'?300:900));
+    panels=shelfNest(all,pw,ph,kerf);
+    const placed=panels.flatMap(p=>p.placed);
+    const area=placed.reduce((s,p)=>s+p.pw*p.ph,0);
+    const eff=(area/(pw*ph*panels.length)*100).toFixed(1);
+    document.getElementById('nest-badge').className='badge b-amber';
+    document.getElementById('nest-badge').textContent='Local '+nestMode;
+    document.getElementById('st-eff').textContent=eff+'%';
+    document.getElementById('st-pan').textContent=panels.length;
+    document.getElementById('st-waste').textContent=(100-eff).toFixed(1)+'%';
+    document.getElementById('st-pieces').textContent=placed.length;
+    document.getElementById('eff-fill').style.width=eff+'%';
+    document.getElementById('eff-lbl').textContent=eff+'%';
+  }
+  nestResult={panels,pw,ph};panelIdx=0;
+  updatePanelNav();drawPanel(0);
+  document.getElementById('nest-ph').style.display='none';
+  document.getElementById('nest-svg').style.display='block';
+  document.getElementById('export-btns').style.display='flex';
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-puzzle"></i>Relancer';
+}
+
+function drawPanel(idx){
+  if(!nestResult)return;
+  const{panels,pw,ph}=nestResult;
+  const panel=panels[idx];if(!panel)return;
+  const svg=document.getElementById('nest-svg');
+  const cw=svg.parentElement.clientWidth-24;
+  const ch=300;
+  const sc=Math.min(cw/pw,ch/ph);
+  svg.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
+  svg.setAttribute('width',pw*sc);svg.setAttribute('height',ph*sc);
+  let html=`<defs><pattern id="hatch" width="30" height="30" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="30" stroke="${'#252A38'}" stroke-width="1"/></pattern></defs>`;
+  html+=`<rect width="${pw}" height="${ph}" fill="url(#hatch)"/>`;
+  html+=`<rect width="${pw}" height="${ph}" fill="none" stroke="#1D9E75" stroke-width="${Math.max(10,1/sc*20)}"/>`;
+  (panel.placed||[]).forEach(p=>{
+    const c=COLORS[(p.colorIdx||0)%COLORS.length];
+    const fs=Math.max(50,Math.min(p.pw,p.ph)*0.12);
+    html+=`<rect x="${p.px}" y="${p.py}" width="${p.pw}" height="${p.ph}" fill="${c[1]}22" stroke="${c[0]}" stroke-width="${Math.max(8,0.8/sc*20)}" rx="10"/>`;
+    html+=`<text x="${p.px+p.pw/2}" y="${p.py+p.ph/2}" text-anchor="middle" dominant-baseline="middle" fill="${c[0]}" font-size="${fs}" font-weight="600" font-family="sans-serif">${p.name||p.piece_name}</text>`;
+    html+=`<text x="${p.px+p.pw/2}" y="${p.py+p.ph/2+fs*1.2}" text-anchor="middle" dominant-baseline="middle" fill="${c[0]}" font-size="${fs*0.65}" font-family="monospace" opacity=".7">${p.pw}×${p.ph}${p.rot?' ↻':''}</text>`;
+  });
+  svg.innerHTML=html;
+}
+function updatePanelNav(){
+  if(!nestResult)return;
+  const n=nestResult.panels.length;
+  document.getElementById('panel-ind').textContent=`Panneau ${panelIdx+1}/${n}`;
+  document.getElementById('btn-prev').disabled=panelIdx===0;
+  document.getElementById('btn-next').disabled=panelIdx>=n-1;
+}
+function prevPanel(){if(panelIdx>0){panelIdx--;updatePanelNav();drawPanel(panelIdx);}}
+function nextPanel(){if(nestResult&&panelIdx<nestResult.panels.length-1){panelIdx++;updatePanelNav();drawPanel(panelIdx);}}
+function exportSVG(){if(!nestResult)return;const svg=document.getElementById('nest-svg');const blob=new Blob(['<?xml version="1.0"?>\n'+svg.outerHTML],{type:'image/svg+xml'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`mbworks_panneau${panelIdx+1}.svg`;a.click();}
+function exportCSV(){if(!nestResult)return;const rows=[['Pièce','Largeur','Hauteur','X','Y','Rotation','Panneau']];nestResult.panels.forEach((p,pi)=>(p.placed||[]).forEach(q=>rows.push([q.name||q.piece_name,q.pw,q.ph,Math.round(q.px),Math.round(q.py),q.rot?'Oui':'Non',pi+1])));const csv=rows.map(r=>r.join(';')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='mbworks_debit.csv';a.click();}
+function importDXF(){alert('Import DXF : glisse ton fichier sur la liste de débit.\nFonctionnalité complète disponible dans la prochaine version.');}
+function callAPI(path,msg){alert(msg+'\n\nEndpoint : '+API_URL+path);}
+
+// ── INIT ──
+renderPieces();
+applyPreset();
+loadDashboard();
+testAPI();
+</script>
 </body>
 </html>
